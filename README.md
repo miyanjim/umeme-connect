@@ -53,6 +53,8 @@ This tool is currently provided free of charge, aiming to be a valuable resource
 <b>💌 Feedback & Bug Reports</b><p>
 Your input helps us improve! If you find a bug, have an idea for a new feature, or simply want to share general feedback, please use our anonymous feedback form.
 
+https://umeme-connect.netlify.app/#open-feedback-modal-link
+
 Please remember: Do NOT include any personal or sensitive information in your feedback. This feedback is anonymous.
 
 <b>📄 License</b><p>
