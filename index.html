@@ -603,47 +603,55 @@
         </div>
     </div>
 
-    <!-- Feedback Modal HTML -->
-    <div id="feedback-modal" class="modal-overlay">
-        <div class="modal-dialog">
-            <button class="close-button" id="close-feedback-modal">&times;</button>
-            <h2>Send Us Your Feedback</h2>
-            <p class="modal-subtitle text-red-600 font-semibold">
-                **Please do NOT include any personal or sensitive information.**
-                This feedback is anonymous.
+<!-- Feedback Modal HTML -->
+<div id="feedback-modal" class="modal-overlay">
+    <div class="modal-dialog">
+        <button class="close-button" id="close-feedback-modal">&times;</button>
+        <h2>Send Us Your Feedback</h2>
+        <p class="modal-subtitle text-red-600 font-semibold">
+            **Please do NOT include any personal or sensitive information.**
+            This feedback is anonymous.
+        </p>
+        <!-- CRITICAL: Added data-netlify-honeypot for spam prevention -->
+        <form id="feedback-form" class="modal-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <!-- CRITICAL: Hidden field to tell Netlify the form's name for AJAX submissions -->
+            <input type="hidden" name="form-name" value="feedback">
+            
+            <!-- Honeypot field for spam prevention - keep it hidden -->
+            <p class="hidden">
+                <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
             </p>
-            <!-- Added data-netlify="true" to the form -->
-            <form id="feedback-form" class="modal-form" name="feedback" method="POST" data-netlify="true">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
-                    <div class="flex flex-col sm:flex-row sm:space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
-                            <span class="ml-2 text-gray-700">Bug Report</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
-                            <span class="ml-2 text-gray-700">Feature Request</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
-                            <span class="ml-2 text-gray-700">General Feedback</span>
-                        </label>
-                    </div>
-                </div>
 
-                <div class="mb-4 input-group">
-                    <label for="feedbackDescription" class="text-sm">Description:</label>
-                    <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
+                <div class="flex flex-col sm:flex-row sm:space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
+                        <span class="ml-2 text-gray-700">Bug Report</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
+                        <span class="ml-2 text-gray-700">Feature Request</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
+                        <span class="ml-2 text-gray-700">General Feedback</span>
+                    </label>
                 </div>
-                
-                <!-- Hidden field to capture user agent -->
-                <input type="hidden" id="userAgent" name="userAgent">
+            </div>
 
-                <button type="submit">Send Feedback</button>
-            </form>
-        </div>
+            <div class="mb-4 input-group">
+                <label for="feedbackDescription" class="text-sm">Description:</label>
+                <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
+            </div>
+            
+            <!-- Hidden field to capture user agent -->
+            <input type="hidden" id="userAgent" name="userAgent">
+
+            <button type="submit">Send Feedback</button>
+        </form>
     </div>
+</div>
 
     <script>
         // Data for popular PHEVs in Australia (L/100km for fuel-only mode, kWh/100km for EV)
