@@ -612,13 +612,15 @@
             **Please do NOT include any personal or sensitive information.**
             This feedback is anonymous.
         </p>
-        <!-- CRITICAL: Added data-netlify-honeypot for spam prevention -->
-        <form id="feedback-form" class="modal-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-            <!-- CRITICAL: Hidden field to tell Netlify the form's name for AJAX submissions -->
+        <!-- Form Tag: 'name' attribute must match 'value' of the hidden 'form-name' input -->
+        <!-- 'data-netlify="true"' enables Netlify's processing -->
+        <!-- 'data-netlify-honeypot="bot-field"' enables honeypot spam protection -->
+        <form id="feedback-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <!-- IMPORTANT: This hidden field is crucial for Netlify to correctly identify the form name when submitted via JavaScript -->
             <input type="hidden" name="form-name" value="feedback">
             
-            <!-- Honeypot field for spam prevention - keep it hidden -->
-            <p class="hidden">
+            <!-- Honeypot field for spam prevention. Keep this field completely hidden from human users. -->
+            <p style="display: none !important;">
                 <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
             </p>
 
@@ -640,19 +642,18 @@
                 </div>
             </div>
 
-            <div class="mb-4 input-group">
+            <div class="mb-4">
                 <label for="feedbackDescription" class="text-sm">Description:</label>
                 <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
             </div>
             
-            <!-- Hidden field to capture user agent -->
+            <!-- Hidden field to capture user agent string for debugging, not PII -->
             <input type="hidden" id="userAgent" name="userAgent">
 
             <button type="submit">Send Feedback</button>
         </form>
     </div>
 </div>
-
     <script>
         // Data for popular PHEVs in Australia (L/100km for fuel-only mode, kWh/100km for EV)
         // Note: Fuel efficiency values are for when the battery is depleted (fuel-only mode).
@@ -1189,63 +1190,52 @@
 
         // Modified feedback form submission for Netlify
         feedbackForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default form submission
-
-            // Netlify handles the actual form submission when data-netlify="true" is present.
-            // We just need to trigger the browser's native form submission.
-            // For AJAX submission (like your current modal approach), a hidden iframe or
-            // a JavaScript-driven submission using Netlify's Identity service
-            // is often used, but for simplicity with data-netlify="true",
-            // we'll simulate a regular form submission which Netlify intercepts.
-
-            // The simplest way to handle this for a modal while still leveraging data-netlify="true"
-            // for backend capture is often to use an AJAX submission without reloading the page.
-            // However, Netlify's basic `data-netlify="true"` often works best with a
-            // traditional form POST that might reload the page.
-            // For a modal, the common Netlify pattern is to also add `data-netlify-honeypot="bot-field"`
-            // and `name="bot-field"` to a hidden input for spam.
-
-            // To avoid page reload and make it feel like an AJAX submission,
-            // we can still use fetch, but we need to ensure the form data is sent
-            // in a format Netlify expects, which is typically URL-encoded.
-            // However, the `data-netlify="true"` attribute is meant for native form submission.
-
-            // Let's refine this to make it compatible with Netlify's recommended way
-            // for AJAX submission while keeping the modal.
-            // Netlify's recommended way for AJAX from SPAs is to include the `name` attribute
-            // on the form and the `data-netlify="true"` (or just `netlify` if you prefer).
-            // Then, for JavaScript submission, you convert `FormData` to URLSearchParams
-            // and POST it.
+            e.preventDefault(); // Prevent default browser form submission
 
             const formData = new FormData(feedbackForm);
+            // Convert FormData to URL-encoded string, which Netlify's backend expects for AJAX forms
+            const encodedData = new URLSearchParams(formData).toString();
+
+            const submitButton = feedbackForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true; // Disable button to prevent multiple submissions
+                submitButton.textContent = 'Sending...'; // Provide feedback to the user
+            }
 
             try {
-                const response = await fetch("/", { // Submit to current page for Netlify to intercept
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // Required for Netlify to parse
-                    body: new URLSearchParams(formData).toString(),
+                // Submit the form data to the current page's URL. Netlify intercepts this POST request.
+                const response = await fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded' // Essential header for Netlify forms
+                    },
+                    body: encodedData // The URL-encoded form data
                 });
 
-                if (response.ok) {
+                if (response.ok) { // Check if the response status is in the 200-299 range
                     displayMessage('Thank you for your feedback! It has been received.', 'success');
-                    feedbackForm.reset(); // Clear form fields
+                    feedbackForm.reset(); // Clear all form fields after successful submission
                 } else {
-                    // Netlify returns a 404 for submissions if it's not configured correctly or
-                    // sometimes even on success, so relying on `response.ok` is tricky without
-                    // further setup (e.g., redirecting to a success page).
-                    // For a modal, we'll assume success if no obvious network error.
-                    // A simple workaround for Netlify's headless form submission status:
-                    // if (response.status === 200) { ... } or just general success message.
-                    displayMessage('Failed to send feedback. Please try again later.', 'error');
+                    // Log more details in case of an HTTP error response from the server
+                    console.error('Netlify form submission failed (HTTP error):', response.status, response.statusText);
+                    displayMessage('Failed to send feedback. Please try again. (Error Code: ' + response.status + ')', 'error');
                 }
             } catch (error) {
-                console.error('Network or submission error:', error);
-                displayMessage('An error occurred. Please check your internet connection and try again.', 'error');
+                // Catch network errors or issues with the fetch operation itself
+                console.error('Network error during form submission:', error);
+                displayMessage('An error occurred. Please check your internet connection. (Details in console)', 'error');
             } finally {
-                feedbackModal.classList.remove('visible'); // Always close modal after attempt
+                // Re-enable the submit button and reset its text after the process
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Send Feedback';
+                }
+                // Close the modal after a short delay so the user can see the message
+                setTimeout(() => {
+                    feedbackModal.classList.remove('visible');
+                }, 1500); // 1.5 second delay
             }
         });
-
 
         // Initial setup
         window.onload = () => {
