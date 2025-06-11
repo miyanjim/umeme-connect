@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHEV Fuel vs Electric Companion</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scroll on small screens */
+            min-height: 100vh;
+            padding: 2rem 1rem; /* Add padding for mobile */
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            max-width: 900px; /* Wider container for chart and table */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            border: 1px solid #e2e8f0; /* Subtle border */
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #334155; /* Slate 700 */
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .input-group input[type="number"],
+        .input-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #1e293b; /* Slate 900 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        /* Styles for text inputs, numbers, selects, and textareas */
+        .input-group input[type="text"],
+        .input-group input[type="email"],
+        .input-group input[type="number"],
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #1e293b; /* Slate 900 */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        /* Focus styles for all relevant input types */
+        .input-group input[type="text"]:focus,
+        .input-group input[type="email"]:focus,
+        .input-group input[type="number"]:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6; /* Blue 500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Blue 500 with opacity */
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.25rem;
+            border: 1px solid #cbd5e1;
+            accent-color: #3b82f6; /* Blue 500 */
+        }
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            margin-left: 4px; /* Space between label and icon */
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #334155; /* Slate 700 */
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the icon */
+            left: 50%;
+            margin-left: -125px; /* Use half of the width to center */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        .tooltip .tooltiptext::after { /* Tooltip arrow */
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #334155 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .calculate-button {
+            background-color: #3b82f6; /* Blue 500 */
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            width: 100%;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        .calculate-button:hover {
+            background-color: #2563eb; /* Blue 600 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
+        }
+        .calculate-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+        }
+        .result-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px; /* Fixed height for chart */
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .table-container {
+            overflow-x: auto; /* Enable horizontal scrolling for small screens */
+        }
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 0.875rem; /* Smaller font for table content */
+        }
+        .matrix-table th, .matrix-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem 0.5rem; /* Adjusted padding */
+        }
+        .matrix-table th {
+            background-color: #f1f5f9; /* Light gray header */
+            font-weight: 600;
+            color: #475569;
+        }
+        .matrix-table td {
+            background-color: #ffffff;
+            color: #334155;
+        }
+        .matrix-table .electric-cheaper {
+            background-color: #dbeafe; /* Light blue */
+            color: #1e40af; /* Darker blue */
+            font-weight: 600;
+        }
+        .matrix-table .petrol-cheaper {
+            background-color: #fee2e2; /* Light red */
+            color: #991b1b; /* Darker red */
+            font-weight: 600;
+        }
+        .matrix-table .breakeven {
+            background-color: #fef9c3; /* Light yellow */
+            color: #854d09; /* Darker yellow */
+            font-weight: 600;
+        }
+
+        /* Novated Lease Controls Specific Styling */
+        #novated-lease-group { /* This div is now always visible */
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            background-color: #fdfefe;
+        }
+        #novated-discount-options.hidden { /* This inner div is toggled */
+            display: none;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .slider-group input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: #cbd5e1;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 4px;
+        }
+        .slider-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .slider-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .radio-group div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .radio-group input[type="radio"] {
+            accent-color: #3b82f6;
+        }
+        #cost-comparison-output {
+            margin-top: 0.5rem; /* Adjusted for new position */
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            border: 1px solid;
+            margin-bottom: 1.5rem; /* Space below output */
+        }
+        /* New styles for the improved output text */
+        .cost-output-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .cost-output-savings {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .cost-output-breakdown {
+            font-size: 0.875rem;
+            text-align: left;
+            margin: 0 auto;
+            display: inline-block;
+            color: #475569;
+        }
+
+        .output-electric-cheaper {
+            background-color: #e0f2fe; /* Light blue */
+            border-color: #93c5fd; /* Mid blue */
+            color: #1e40af; /* Dark blue */
+        }
+        .output-petrol-cheaper {
+            background-color: #fee2e2; /* Light red */
+            border-color: #fca5a5; /* Mid red */
+            color: #991b1b; /* Dark red */
+        }
+        .output-similar-cost {
+            background-color: #fffbeb; /* Light yellow */
+            border-color: #fcd34d; /* Mid yellow */
+            color: #854d09; /* Dark yellow */
+        }
+        .logo-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .logo-display svg {
+            width: 100%; /* Make it fluid within its parent */
+            max-width: 250px; /* Limit its max size to a reasonable width */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 0.5rem;
+        }
+        .main-heading {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #1e293b; /* slate-900 */
+            text-align: center;
+            margin-top: 0.5rem; /* Space between logo and text */
+        }
+        .feedback-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px dashed #cbd5e1;
+            border-radius: 1rem;
+            text-align: center;
+            background-color: #f8fafc;
+        }
+        .feedback-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+        .feedback-section p {
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+        .feedback-section a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+        .disclaimer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem; /* text-sm */
+            color: #64748b; /* slate-500 */
+            text-align: center;
+            line-height: 1.5;
+        }
+        /* New styling for the overall copyright notice */
+        .global-copyright {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 0.75rem; /* Smaller font for general copyright */
+            color: #64748b;
+        }
+
+        /* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensures it's on top of other content */
+            visibility: hidden; /* Hidden by default */
+            opacity: 0; /* Faded out by default */
+            transition: visibility 0.3s, opacity 0.3s;
+        }
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-dialog {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            transform: translateY(20px); /* Small subtle animation */
+            transition: transform 0.3s ease-out;
+        }
+        .modal-overlay.visible .modal-dialog {
+            transform: translateY(0);
+        }
+        .modal-dialog h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem; /* Adjusted for subheading */
+            text-align: center;
+        }
+        .modal-dialog .modal-subtitle {
+            font-size: 0.9rem;
+            color: #475569;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-dialog .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .modal-dialog .close-button:hover {
+            color: #334155;
+        }
+        .modal-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #334155;
+        }
+        .modal-form input[type="radio"] {
+            margin-right: 0.5rem;
+            accent-color: #3b82f6;
+        }
+        .modal-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .modal-form button[type="submit"] {
+            background-color: #16a34a; /* Green 600 */
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            border: none;
+            margin-top: 1.5rem;
+        }
+        .modal-form button[type="submit"]:hover {
+            background-color: #15803d; /* Green 700 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-column">
+            <div class="logo-display">
+                <!-- UmemeConnect Logo (Emphasized Umeme) - REVISED SPACING AND NO COPYRIGHT SYMBOL -->
+                <svg viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title-umeme-logo desc-umeme-logo">
+                    <title id="title-umeme-logo">UmemeConnect Logo (Emphasized Umeme)</title>
+                    <desc id="desc-umeme-logo">Logo focusing on 'Umeme' with integrated energy flow and subtle 'Connect' text.</desc>
+                    <defs>
+                        <linearGradient id="umemeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#3b82f6" />   <!-- Blue -->
+                            <stop offset="50%" stop-color="#16a34a" />   <!-- Green -->
+                            <stop offset="100%" stop-color="#f59e0b" /> <!-- Orange -->
+                        </linearGradient>
+                    </defs>
+
+                    <!-- The main 'U' with integrated energy flow -->
+                    <text x="30" y="70" font-family="Inter, sans-serif" font-size="60" font-weight="bold" fill="url(#umemeGradient)">U</text>
+                    <!-- Dynamic energy flow paths within/around the 'U' -->
+                    <path d="M 35 35 Q 40 25, 45 35 Q 50 45, 45 45 L 35 45 Z" fill="url(#umemeGradient)" opacity="0.7" transform="rotate(10 40 40)"/>
+                    <path d="M 40 50 Q 45 40, 50 50 Q 55 60, 50 60 L 40 60 Z" fill="url(#umemeGradient)" opacity="0.6" transform="rotate(-15 45 50)"/>
+
+
+                    <!-- Text 'meme' to complete 'Umeme' - adjusted x for closer spacing -->
+                    <text x="68" y="70" font-family="Inter, sans-serif" font-size="40" font-weight="bold" fill="#1e293b">meme </text>
+
+                    <!-- Subtle 'Connect' text below 'Umeme' - adjusted x for better alignment and increased font size -->
+                    <text x="100" y="95" font-family="Inter, sans-serif" font-size="20" text-anchor="middle" fill="#475569">Connect</text>
+                </svg>
+                <h1 class="main-heading">PHEV Fuel vs Electric Companion</h1>
+            </div>
+
+            <div class="mb-4 input-group">
+                <label for="car-select" class="block text-sm">Select Car Model:</label>
+                <select id="car-select" class="mt-1">
+                    <option value="">Custom Input</option>
+                </select>
+            </div>
+
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="fuel-efficiency" class="text-sm">Fuel Efficiency (L/100km, Fuel-Only Mode):</label>
+                    <input type="number" id="fuel-efficiency" placeholder="e.g., 7.5" step="0.1" value="7.5">
+                </div>
+                <div class="input-group">
+                    <label for="battery-efficiency" class="text-sm">Battery Efficiency (kWh/100km):</label>
+                    <input type="number" id="battery-efficiency" placeholder="e.g., 18.0" step="0.1" value="18.0">
+                </div>
+                <div class="input-group">
+                    <label for="electricity-price" class="text-sm">Electricity Price ($/kWh):</label>
+                    <input type="number" id="electricity-price" placeholder="e.g., 0.35" step="0.01" value="0.35">
+                </div>
+                <div class="input-group">
+                    <label for="fuel-price" class="text-sm">Fuel Price ($/L):</label>
+                    <input type="number" id="fuel-price" placeholder="e.g., 1.85" step="0.01" value="1.85">
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="charging-loss-checkbox" checked>
+                <label for="charging-loss-checkbox" class="text-sm">Include 15% Charging Loss</label>
+                <div class="tooltip">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-gray-400" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.083.082-.38-.45-.083a.294.294 0 0 1-.288-.469l.738-3.468a.294.294 0 0 1 .288-.469l.45.083.082.38zM8 4.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
+                    <span class="tooltiptext">When you charge an EV, some energy is lost as heat. This option adds a 15% inefficiency factor, meaning you pay for slightly more electricity than what's stored in the battery.</span>
+                </div>
+            </div>
+
+
+            <!-- Novated Lease Discount Controls -->
+            <div id="novated-lease-group">
+                <div class="checkbox-group mb-2">
+                    <input type="checkbox" id="apply-novated-discount">
+                    <label for="apply-novated-discount" class="text-base font-bold text-gray-700">Apply Novated Lease Discount</label>
+                </div>
+
+                <div id="novated-discount-options" class="hidden">
+                    <div class="slider-group">
+                        <label for="novated-discount-slider" class="text-sm flex-shrink-0">Discount (%):</label>
+                        <input type="range" id="novated-discount-slider" min="0" max="45" value="0" step="1">
+                        <span id="novated-discount-value" class="text-sm font-semibold w-8 text-right">0%</span>
+                    </div>
+
+                    <div class="radio-group">
+                        <label class="text-sm font-medium mb-1">Apply discount to:</label>
+                        <div>
+                            <input type="radio" id="discount-fuel" name="discount-apply-to" value="fuel" checked>
+                            <label for="discount-fuel" class="text-sm">Fuel Only</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="discount-electric" name="discount-apply-to" value="electric">
+                            <label for="discount-electric" class="text-sm">Electricity Only</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="discount-both" name="discount-apply-to" value="both">
+                            <label for="discount-both" class="text-sm">Both</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="calculate-button" class="calculate-button mt-6">Calculate Breakeven</button>
+        </div>
+
+        <div class="chart-and-table-column">
+            <div class="result-section">
+                <!-- User-defined cost output moved here -->
+                <div id="cost-comparison-output" class=""></div>
+
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 mt-6">Breakeven Analysis</h3>
+                <div class="chart-container">
+                    <canvas id="costChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-600 mb-6">
+                    The line indicates the breakeven point where the cost of electric travel equals the cost of petrol travel per unit of distance. The shaded area indicates when electric travel is cheaper. The green circle marks your current input prices.
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">Ready Reckoner Table (Cheaper Option)</h3>
+                <div class="table-container">
+                    <table id="breakeven-table" class="matrix-table">
+                        <!-- Table content will be generated by JavaScript -->
+                    </table>
+                </div>
+                <p class="text-sm text-gray-600 mt-4">
+                    Cells indicate whether **Electric** or **Petrol** is cheaper at the given prices, or if they are **Similar** (within 5% difference).
+                </p>
+            </div>
+        </div>
+        
+        <!-- Feedback and Bug Report Section -->
+        <div class="feedback-section">
+            <h3>Spotted a Bug or Have an Idea?</h3>
+            <p>We're constantly improving PHEV Fuel vs Electric Companion. Your feedback is invaluable!</p>
+            <!-- Link to open the modal -->
+            <a href="#" id="open-feedback-modal-link" class="text-blue-600 font-semibold underline">Click Here to Send Us Feedback</a>
+        </div>
+
+
+        <!-- Disclaimer Section -->
+        <div class="disclaimer">
+            **Disclaimer:** All information provided by PHEV Fuel vs Electric Companion is for **general guidance and informational purposes only**. While we strive for accuracy, we make no guarantees regarding the completeness, reliability, or accuracy of the data or calculations. Vehicle efficiencies, charging losses, and fuel/electricity prices can vary significantly based on real-world conditions, driving habits, location, and specific providers. Users should use this information **at their own risk** and verify any critical details independently. We **take no liability** for any incorrect data or calculations, or for any decisions made based on the information presented.
+        </div>
+
+        <!-- Global Copyright Notice -->
+        <div class="global-copyright">
+            © 2025 UmemeConnect. All rights reserved.
+        </div>
+    </div>
+
+    <!-- Feedback Modal HTML -->
+    <div id="feedback-modal" class="modal-overlay">
+        <div class="modal-dialog">
+            <button class="close-button" id="close-feedback-modal">&times;</button>
+            <h2>Send Us Your Feedback</h2>
+            <p class="modal-subtitle text-red-600 font-semibold">
+                **Please do NOT include any personal or sensitive information.**
+                This feedback is anonymous.
+            </p>
+            <!-- Added data-netlify="true" to the form -->
+            <form id="feedback-form" class="modal-form" name="feedback" method="POST" data-netlify="true">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
+                            <span class="ml-2 text-gray-700">Bug Report</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
+                            <span class="ml-2 text-gray-700">Feature Request</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
+                            <span class="ml-2 text-gray-700">General Feedback</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4 input-group">
+                    <label for="feedbackDescription" class="text-sm">Description:</label>
+                    <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
+                </div>
+                
+                <!-- Hidden field to capture user agent -->
+                <input type="hidden" id="userAgent" name="userAgent">
+
+                <button type="submit">Send Feedback</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data for popular PHEVs in Australia (L/100km for fuel-only mode, kWh/100km for EV)
+        // Note: Fuel efficiency values are for when the battery is depleted (fuel-only mode).
+        // EV efficiency values are generally combined WLTP figures or derived from battery capacity/range.
+        // This data would ideally come from an API, but is hardcoded here due to API availability limitations for client-side apps.
+        const phevData = [
+            { name: "Audi Q5 TFSI e", fuel: 8.0, ev: 22.5 },
+            { name: "BMW X5 xDrive50e", fuel: 11.5, ev: 9.1 },
+            { name: "BYD Sealion 6 Dynamic", fuel: 4.8, ev: 16.9 },
+            { name: "BYD Sealion 6 Premium", fuel: 5.8, ev: 17.9 },
+            { name: "BYD Shark", fuel: 7.0, ev: 29.6 }, // Estimated fuel-only, EV calculated from 29.6kWh battery/100km range
+            { name: "Cupra Formentor VZ e-Hybrid", fuel: 6.5, ev: 14.1 },
+            { name: "Cupra Leon VZ e-Hybrid", fuel: 6.5, ev: 14.1 },
+            { name: "Ford Escape PHEV", fuel: 5.5, ev: 15.2 },
+            { name: "GWM Haval H6 PHEV", fuel: 5.4, ev: 19.7 },
+            { name: "Hyundai Santa Fe PHEV", fuel: 6.5, ev: 18.0 },
+            { name: "Jeep Grand Cherokee 4xe", fuel: 10.8, ev: 27.5 },
+            { name: "Kia Sorento PHEV", fuel: 6.0, ev: 20.6 },
+            { name: "Kia Sportage PHEV", fuel: 6.0, ev: 17.7 },
+            { name: "Land Rover Defender P400e", fuel: 10.5, ev: 19.2 },
+            { name: "Mazda CX-60 P50e", fuel: 7.0, ev: 21.1 },
+            { name: "Mercedes-Benz C300e", fuel: 7.0, ev: 18.8 },
+            { name: "Mercedes-Benz GLC300e", fuel: 8.0, ev: 20.8 },
+            { name: "MG HS Plus EV", fuel: 5.5, ev: 16.9 },
+            { name: "Mitsubishi Outlander PHEV", fuel: 6.0, ev: 23.8 },
+            { name: "Porsche Cayenne E-Hybrid", fuel: 10.0, ev: 24.6 }
+        ];
+
+        // Get DOM elements
+        const carSelect = document.getElementById('car-select');
+        const fuelEfficiencyInput = document.getElementById('fuel-efficiency');
+        const batteryEfficiencyInput = document.getElementById('battery-efficiency');
+        const electricityPriceInput = document.getElementById('electricity-price');
+        const fuelPriceInput = document.getElementById('fuel-price');
+        const chargingLossCheckbox = document.getElementById('charging-loss-checkbox');
+        const calculateButton = document.getElementById('calculate-button');
+        const costChartCanvas = document.getElementById('costChart');
+        const breakevenTable = document.getElementById('breakeven-table');
+        const costComparisonOutput = document.getElementById('cost-comparison-output');
+
+        // Novated Lease specific elements
+        const novatedLeaseGroup = document.getElementById('novated-lease-group');
+        const applyNovatedDiscountCheckbox = document.getElementById('apply-novated-discount');
+        const novatedDiscountOptions = document.getElementById('novated-discount-options');
+        const novatedDiscountSlider = document.getElementById('novated-discount-slider');
+        const novatedDiscountValueSpan = document.getElementById('novated-discount-value');
+        const discountFuelRadio = document.getElementById('discount-fuel');
+        const discountElectricRadio = document.getElementById('discount-electric');
+        const discountBothRadio = document.getElementById('discount-both');
+
+        // Feedback Modal elements
+        const openFeedbackModalLink = document.getElementById('open-feedback-modal-link');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const closeFeedbackModalButton = document.getElementById('close-feedback-modal');
+        const feedbackForm = document.getElementById('feedback-form');
+        const userAgentInput = document.getElementById('userAgent');
+
+
+        // Chart instance
+        let costChart;
+
+        // Populate car selection dropdown
+        function populateCarSelect() {
+            // Clear existing options first (except Custom Input)
+            carSelect.innerHTML = '<option value="">Custom Input</option>';
+            phevData.sort((a, b) => a.name.localeCompare(b.name)).forEach(car => { // Sort alphabetically
+                const option = document.createElement('option');
+                option.value = car.name;
+                option.textContent = car.name;
+                carSelect.appendChild(option);
+            });
+        }
+
+        // Handle car selection change
+        carSelect.addEventListener('change', (event) => {
+            const selectedCarName = event.target.value;
+            if (selectedCarName === "") {
+                // Custom input selected, set default values
+                fuelEfficiencyInput.value = "7.5";
+                batteryEfficiencyInput.value = "18.0";
+            } else {
+                const selectedCar = phevData.find(car => car.name === selectedCarName);
+                if (selectedCar) {
+                    fuelEfficiencyInput.value = selectedCar.fuel.toFixed(1);
+                    batteryEfficiencyInput.value = selectedCar.ev.toFixed(1);
+                }
+            }
+            calculateBreakevenAndTable(); // Re-calculate immediately after selecting a car
+        });
+
+        // Toggle novated lease options visibility
+        applyNovatedDiscountCheckbox.addEventListener('change', () => {
+            if (applyNovatedDiscountCheckbox.checked) {
+                novatedDiscountOptions.classList.remove('hidden');
+                novatedDiscountSlider.disabled = false;
+                discountFuelRadio.disabled = false;
+                discountElectricRadio.disabled = false;
+                discountBothRadio.disabled = false;
+            } else {
+                novatedDiscountOptions.classList.add('hidden');
+                novatedDiscountSlider.disabled = true;
+                discountFuelRadio.disabled = true;
+                discountElectricRadio.disabled = true;
+                discountBothRadio.disabled = true;
+            }
+            calculateBreakevenAndTable(); // Recalculate when discount applied/removed
+        });
+
+        // Update slider value display and trigger recalculation
+        novatedDiscountSlider.addEventListener('input', () => {
+            novatedDiscountValueSpan.textContent = `${novatedDiscountSlider.value}%`;
+            calculateBreakevenAndTable();
+        });
+
+        // Recalculate when discount application option changes
+        discountFuelRadio.addEventListener('change', calculateBreakevenAndTable);
+        discountElectricRadio.addEventListener('change', calculateBreakevenAndTable);
+        discountBothRadio.addEventListener('change', calculateBreakevenAndTable);
+
+
+        // Main function to calculate breakeven and update chart/table
+        function calculateBreakevenAndTable() {
+            const fuelEfficiency = parseFloat(fuelEfficiencyInput.value);
+            const batteryEfficiency = parseFloat(batteryEfficiencyInput.value);
+            const chargingLossFactor = chargingLossCheckbox.checked ? 1.15 : 1.0; // 15% loss
+
+            // Novated Lease values
+            const applyDiscount = applyNovatedDiscountCheckbox.checked;
+            const discountPercentage = parseFloat(novatedDiscountSlider.value);
+            const discountFactor = applyDiscount ? (1 - discountPercentage / 100) : 1.0;
+
+            const discountAppliesTo = document.querySelector('input[name="discount-apply-to"]:checked').value;
+
+            // Validate inputs
+            if (isNaN(fuelEfficiency) || isNaN(batteryEfficiency) || fuelEfficiency <= 0 || batteryEfficiency <= 0) {
+                displayMessage("Please enter valid positive numbers for car efficiencies.", "error");
+                // Clear outputs if inputs are invalid
+                costComparisonOutput.textContent = "Please enter valid efficiency values.";
+                costComparisonOutput.className = "output-similar-cost"; // Use a neutral style for error
+                if (costChart) costChart.destroy();
+                breakevenTable.innerHTML = '';
+                return;
+            }
+
+            // Calculate the slope for the breakeven line considering potential discounts
+            let effectiveFuelCostRatio = fuelEfficiency;
+            let effectiveElectricCostRatio = batteryEfficiency * chargingLossFactor;
+
+            if (applyDiscount) {
+                if (discountAppliesTo === 'fuel' || discountAppliesTo === 'both') {
+                    effectiveFuelCostRatio *= discountFactor;
+                }
+                if (discountAppliesTo === 'electric' || discountAppliesTo === 'both') {
+                    effectiveElectricCostRatio *= discountFactor;
+                }
+            }
+
+            let slope = 0;
+            if (effectiveElectricCostRatio > 0) {
+                slope = effectiveFuelCostRatio / effectiveElectricCostRatio;
+            } else {
+                slope = Infinity; // Electric cost is effectively zero
+            }
+
+            // Get current user input prices for plotting
+            const currentFuelPrice = parseFloat(fuelPriceInput.value);
+            const currentElectricityPrice = parseFloat(electricityPriceInput.value);
+
+            updateBreakevenChart(slope, currentFuelPrice, currentElectricityPrice); // Pass current prices
+            generateBreakevenTable(fuelEfficiency, batteryEfficiency, chargingLossFactor, applyDiscount, discountPercentage, discountAppliesTo);
+            updateUserDefinedCostComparison(fuelEfficiency, batteryEfficiency, chargingLossFactor, applyDiscount, discountPercentage, discountAppliesTo);
+            displayMessage("Analysis updated!", "success");
+        }
+
+        // Function to update the breakeven chart
+        function updateBreakevenChart(slope, currentFuelPrice, currentElectricityPrice) { // Added current prices
+            if (costChart) {
+                costChart.destroy(); // Destroy existing chart if it exists
+            }
+
+            // Define ranges for X (Fuel Price) and Y (Electricity Price) axes
+            const minFuelPrice = 1.20;
+            const maxFuelPrice = 2.80;
+            const minElectricityPrice = 0.00;
+            const maxElectricityPrice = 0.80;
+
+            // Generate points for the breakeven line
+            const breakevenLinePoints = [];
+            for (let fp = minFuelPrice; fp <= maxFuelPrice; fp += 0.01) {
+                const ep = slope * fp;
+                if (ep >= minElectricityPrice && ep <= maxElectricityPrice) {
+                    breakevenLinePoints.push({ x: fp, y: ep });
+                }
+            }
+            
+            // If slope is Infinity (electric effectively free), add a vertical line at min fuel price
+            if (slope === Infinity) {
+                 breakevenLinePoints.push({ x: minFuelPrice, y: minElectricityPrice });
+                 breakevenLinePoints.push({ x: minFuelPrice, y: maxElectricityPrice });
+            }
+
+            // Data for the user-defined point
+            const userPointData = [];
+            if (!isNaN(currentFuelPrice) && !isNaN(currentElectricityPrice) &&
+                currentFuelPrice >= minFuelPrice && currentFuelPrice <= maxFuelPrice &&
+                currentElectricityPrice >= minElectricityPrice && currentElectricityPrice <= maxElectricityPrice) {
+                userPointData.push({ x: currentFuelPrice, y: currentElectricityPrice });
+            }
+
+            costChart = new Chart(costChartCanvas, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Electric Cheaper Area',
+                            data: breakevenLinePoints, // Use breakeven points for the shaded area
+                            backgroundColor: 'rgba(147, 197, 253, 0.3)', /* Light blue with opacity */
+                            borderColor: 'transparent',
+                            fill: 'origin', // Fill to the x-axis
+                            pointRadius: 0,
+                            order: 2 // Draw this dataset behind the line
+                        },
+                        {
+                            label: 'Breakeven Line (Electric Cost = Petrol Cost)',
+                            data: breakevenLinePoints,
+                            borderColor: '#3b82f6', /* Blue 500 */
+                            backgroundColor: 'transparent', // No fill for the line itself
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            fill: false, // Ensure no fill for the line
+                            tension: 0.1,
+                            order: 1 // Draw this dataset on top
+                        },
+                        {
+                            label: 'Your Current Prices',
+                            data: userPointData,
+                            backgroundColor: '#16a34a', /* Green 600 */
+                            borderColor: '#16a34a',
+                            pointRadius: 8,
+                            pointStyle: 'circle', // Ensure it's a circle
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            type: 'scatter', // Use scatter for individual points
+                            order: 0 // Draw this dataset on top of everything
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Breakeven Point: Electricity Price ($/kWh) vs. Fuel Price ($/L)',
+                            font: {
+                                size: 16,
+                                weight: 'bold',
+                                family: 'Inter'
+                            },
+                            color: '#334155'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Breakeven Line (Electric Cost = Petrol Cost)') {
+                                        return `Breakeven: Fuel: ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(context.parsed.x)}/L, Elec: ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(context.parsed.y)}/kWh`;
+                                    } else if (context.dataset.label === 'Your Current Prices') {
+                                         return `Your Prices: Fuel: ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(context.parsed.x)}/L, Elec: ${new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(context.parsed.y)}/kWh`;
+                                    }
+                                    return ''; // Hide tooltip for the shaded area dataset
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            min: minFuelPrice,
+                            max: maxFuelPrice,
+                            title: {
+                                display: true,
+                                text: 'Fuel Price ($/L)',
+                                font: {
+                                    size: 14,
+                                    family: 'Inter'
+                                },
+                                color: '#475569'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                },
+                                color: '#475569',
+                                font: {
+                                    family: 'Inter'
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            min: minElectricityPrice,
+                            max: maxElectricityPrice,
+                            title: {
+                                display: true,
+                                text: 'Electricity Price ($/kWh)',
+                                font: {
+                                    size: 14,
+                                    family: 'Inter'
+                                },
+                                color: '#475569'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                },
+                                color: '#475569',
+                                font: {
+                                    family: 'Inter'
+                                }
+                            },
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to generate the breakeven table matrix
+        function generateBreakevenTable(fuelEfficiency, batteryEfficiency, chargingLossFactor, applyDiscount, discountPercentage, discountAppliesTo) {
+            // Fuel price points for the table (11 steps, starting 1.35, increment 0.10)
+            const fuelPrices = Array.from({length: 11}, (_, i) => (1.35 + i * 0.10));
+            // Electricity price points for the table (11 steps, starting 0.00, increment 0.10)
+            const electricityPrices = Array.from({length: 11}, (_, i) => (0.00 + i * 0.10));
+
+            const tolerance = 0.05; // 5% difference for "Similar"
+
+            const discountFactor = applyDiscount ? (1 - discountPercentage / 100) : 1.0;
+
+            let tableHTML = '<thead><tr><th class="header-label">Elec Price ($/kWh) / Fuel Price ($/L)</th>';
+            fuelPrices.forEach(fp => {
+                tableHTML += `<th class="font-semibold">${fp.toFixed(2)}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+
+            electricityPrices.forEach(ep => {
+                tableHTML += `<tr><th class="header-label">${ep.toFixed(2)}</th>`;
+                fuelPrices.forEach(fp => {
+                    // Calculate costs per 100 km for comparison
+                    let costFuelPer100km = fuelEfficiency * fp;
+                    let costElectricPer100km = batteryEfficiency * ep * chargingLossFactor;
+
+                    // Apply novated lease discount to costs
+                    if (applyDiscount) {
+                        if (discountAppliesTo === 'fuel' || discountAppliesTo === 'both') {
+                            costFuelPer100km *= discountFactor;
+                        }
+                        if (discountAppliesTo === 'electric' || discountAppliesTo === 'both') {
+                            costElectricPer100km *= discountFactor;
+                        }
+                    }
+
+                    let cellContent = '';
+                    let cellClass = '';
+
+                    const diff = Math.abs(costFuelPer100km - costElectricPer100km);
+                    const averageCost = (costFuelPer100km + costElectricPer100km) / 2;
+
+                    if (averageCost === 0) { // If both costs are effectively zero
+                        cellContent = 'Similar';
+                        cellClass = 'breakeven';
+                    } else if (averageCost > 0 && diff / averageCost <= tolerance) {
+                        cellContent = 'Similar';
+                        cellClass = 'breakeven';
+                    } else if (costElectricPer100km < costFuelPer100km) {
+                        cellContent = `Electric`;
+                        cellClass = 'electric-cheaper';
+                    } else {
+                        cellContent = `Petrol`;
+                        cellClass = 'petrol-cheaper';
+                    }
+                    tableHTML += `<td class="${cellClass}">${cellContent}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</tbody>';
+            breakevenTable.innerHTML = tableHTML;
+        }
+
+        // Update the user-defined cost comparison output
+        function updateUserDefinedCostComparison(fuelEfficiency, batteryEfficiency, chargingLossFactor, applyDiscount, discountPercentage, discountAppliesTo) {
+            const currentFuelPrice = parseFloat(fuelPriceInput.value);
+            const currentElectricityPrice = parseFloat(electricityPriceInput.value);
+            const tolerance = 0.05; // 5% difference for "Similar"
+
+            if (isNaN(currentFuelPrice) || isNaN(currentElectricityPrice) || currentFuelPrice <= 0 || currentElectricityPrice < 0) {
+                costComparisonOutput.innerHTML = `<div class="cost-output-title">Invalid Prices</div><p>Please enter valid current fuel and electricity prices to see a comparison.</p>`;
+                costComparisonOutput.className = "output-similar-cost";
+                return;
+            }
+
+            const discountFactor = applyDiscount ? (1 - discountPercentage / 100) : 1.0;
+
+            // Calculate costs per 100 km for user-defined inputs
+            let costFuelPer100km = fuelEfficiency * currentFuelPrice;
+            let costElectricPer100km = batteryEfficiency * currentElectricityPrice * chargingLossFactor;
+
+            if (applyDiscount) {
+                if (discountAppliesTo === 'fuel' || discountAppliesTo === 'both') {
+                    costFuelPer100km *= discountFactor;
+                }
+                if (discountAppliesTo === 'electric' || discountAppliesTo === 'both') {
+                    costElectricPer100km *= discountFactor;
+                }
+            }
+
+            let outputHTML = '';
+            let outputClass = '';
+
+            const diff = Math.abs(costFuelPer100km - costElectricPer100km);
+            const averageCost = (costFuelPer100km + costElectricPer100km) / 2;
+            const savings = diff.toFixed(2);
+
+            if (averageCost > 0 && diff / averageCost <= tolerance) {
+                outputClass = 'output-similar-cost';
+                outputHTML = `
+                    <div class="cost-output-title">Costs are Nearly Identical</div>
+                    <div class="cost-output-savings">The running costs are too close to call based on your inputs.</div>
+                    <div class="cost-output-breakdown">
+                        <p><strong>Electric Cost:</strong> $${costElectricPer100km.toFixed(2)} / 100km</p>
+                        <p><strong>Petrol Cost:</strong> $${costFuelPer100km.toFixed(2)} / 100km</p>
+                    </div>`;
+            } else if (costElectricPer100km < costFuelPer100km) {
+                outputClass = 'output-electric-cheaper';
+                outputHTML = `
+                    <div class="cost-output-title">Electric is the Cheaper Option</div>
+                    <div class="cost-output-savings">You save <strong class="text-lg">$${savings}</strong> for every 100km driven on electricity.</div>
+                    <div class="cost-output-breakdown">
+                        <p><strong>Electric Cost:</strong> $${costElectricPer100km.toFixed(2)} / 100km</p>
+                        <p><strong>Petrol Cost:</strong> $${costFuelPer100km.toFixed(2)} / 100km</p>
+                    </div>`;
+            } else {
+                outputClass = 'output-petrol-cheaper';
+                 outputHTML = `
+                    <div class="cost-output-title">Petrol is the Cheaper Option</div>
+                    <div class="cost-output-savings">You save <strong class="text-lg">$${savings}</strong> for every 100km driven on petrol.</div>
+                    <div class="cost-output-breakdown">
+                        <p><strong>Petrol Cost:</strong> $${costFuelPer100km.toFixed(2)} / 100km</p>
+                        <p><strong>Electric Cost:</strong> $${costElectricPer100km.toFixed(2)} / 100km</p>
+                    </div>`;
+            }
+
+            costComparisonOutput.innerHTML = outputHTML;
+            costComparisonOutput.className = outputClass;
+        }
+
+
+        // Simple message box display
+        function displayMessage(msg, type = "info") {
+            const messageBox = document.createElement('div');
+            messageBox.textContent = msg;
+            messageBox.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 10px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                animation: fadeOut 5s forwards;
+            `;
+            if (type === "error") {
+                messageBox.style.backgroundColor = '#ef4444'; /* Red 500 */
+            } else {
+                messageBox.style.backgroundColor = '#22c55e'; /* Green 500 */
+            }
+            document.body.appendChild(messageBox);
+
+            // Define fadeOut animation
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes fadeOut {
+                    0% { opacity: 1; }
+                    80% { opacity: 1; }
+                    100% { opacity: 0; display: none; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            setTimeout(() => {
+                messageBox.remove();
+                style.remove(); // Clean up the style tag
+            }, 5000); // Message disappears after 5 seconds
+        }
+
+
+        // Event listener for calculate button
+        calculateButton.addEventListener('click', calculateBreakevenAndTable);
+        // Event listeners for input changes to trigger recalculation
+        fuelEfficiencyInput.addEventListener('change', calculateBreakevenAndTable);
+        batteryEfficiencyInput.addEventListener('change', calculateBreakevenAndTable);
+        electricityPriceInput.addEventListener('change', calculateBreakevenAndTable);
+        fuelPriceInput.addEventListener('change', calculateBreakevenAndTable);
+        chargingLossCheckbox.addEventListener('change', calculateBreakevenAndTable);
+
+        // Event listeners for feedback modal
+        openFeedbackModalLink.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
+            userAgentInput.value = navigator.userAgent; // Capture user agent
+            feedbackModal.classList.add('visible');
+        });
+
+        closeFeedbackModalButton.addEventListener('click', () => {
+            feedbackModal.classList.remove('visible');
+            feedbackForm.reset(); // Reset form fields on close
+        });
+
+        feedbackModal.addEventListener('click', (e) => {
+            // Close modal if user clicks outside the dialog content
+            if (e.target === feedbackModal) {
+                feedbackModal.classList.remove('visible');
+                feedbackForm.reset(); // Reset form fields on close
+            }
+        });
+
+        // Modified feedback form submission for Netlify
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            // Netlify handles the actual form submission when data-netlify="true" is present.
+            // We just need to trigger the browser's native form submission.
+            // For AJAX submission (like your current modal approach), a hidden iframe or
+            // a JavaScript-driven submission using Netlify's Identity service
+            // is often used, but for simplicity with data-netlify="true",
+            // we'll simulate a regular form submission which Netlify intercepts.
+
+            // The simplest way to handle this for a modal while still leveraging data-netlify="true"
+            // for backend capture is often to use an AJAX submission without reloading the page.
+            // However, Netlify's basic `data-netlify="true"` often works best with a
+            // traditional form POST that might reload the page.
+            // For a modal, the common Netlify pattern is to also add `data-netlify-honeypot="bot-field"`
+            // and `name="bot-field"` to a hidden input for spam.
+
+            // To avoid page reload and make it feel like an AJAX submission,
+            // we can still use fetch, but we need to ensure the form data is sent
+            // in a format Netlify expects, which is typically URL-encoded.
+            // However, the `data-netlify="true"` attribute is meant for native form submission.
+
+            // Let's refine this to make it compatible with Netlify's recommended way
+            // for AJAX submission while keeping the modal.
+            // Netlify's recommended way for AJAX from SPAs is to include the `name` attribute
+            // on the form and the `data-netlify="true"` (or just `netlify` if you prefer).
+            // Then, for JavaScript submission, you convert `FormData` to URLSearchParams
+            // and POST it.
+
+            const formData = new FormData(feedbackForm);
+
+            try {
+                const response = await fetch("/", { // Submit to current page for Netlify to intercept
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // Required for Netlify to parse
+                    body: new URLSearchParams(formData).toString(),
+                });
+
+                if (response.ok) {
+                    displayMessage('Thank you for your feedback! It has been received.', 'success');
+                    feedbackForm.reset(); // Clear form fields
+                } else {
+                    // Netlify returns a 404 for submissions if it's not configured correctly or
+                    // sometimes even on success, so relying on `response.ok` is tricky without
+                    // further setup (e.g., redirecting to a success page).
+                    // For a modal, we'll assume success if no obvious network error.
+                    // A simple workaround for Netlify's headless form submission status:
+                    // if (response.status === 200) { ... } or just general success message.
+                    displayMessage('Failed to send feedback. Please try again later.', 'error');
+                }
+            } catch (error) {
+                console.error('Network or submission error:', error);
+                displayMessage('An error occurred. Please check your internet connection and try again.', 'error');
+            } finally {
+                feedbackModal.classList.remove('visible'); // Always close modal after attempt
+            }
+        });
+
+
+        // Initial setup
+        window.onload = () => {
+            populateCarSelect();
+            // Set default values for custom input initially
+            fuelEfficiencyInput.value = "7.5";
+            batteryEfficiencyInput.value = "18.0";
+            electricityPriceInput.value = "0.35";
+            fuelPriceInput.value = "1.85";
+
+            calculateBreakevenAndTable(); // Calculate with default values on load
+
+            // Initialize novated lease controls state
+            novatedDiscountOptions.classList.add('hidden'); // Inner options are hidden initially
+            novatedDiscountSlider.disabled = true;
+            discountFuelRadio.disabled = true;
+            discountElectricRadio.disabled = true;
+            discountBothRadio.disabled = true;
+            novatedDiscountValueSpan.textContent = `${novatedDiscountSlider.value}%`;
+        };
+    </script>
+</body>
+</html>
