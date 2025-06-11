@@ -387,7 +387,7 @@
             border-radius: 1rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 500px;
+            max-width: 650px; /* Increased for wider textarea */
             position: relative;
             transform: translateY(20px); /* Small subtle animation */
             transition: transform 0.3s ease-out;
@@ -434,21 +434,65 @@
         .modal-form textarea {
             min-height: 100px;
             resize: vertical;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: #1e293b;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .modal-form textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
         .modal-form button[type="submit"] {
             background-color: #16a34a; /* Green 600 */
             color: #ffffff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
+            padding: 1rem 1.5rem; /* Increased padding */
+            border-radius: 0.75rem; /* Slightly more rounded */
+            font-size: 1.125rem; /* Larger font size */
+            font-weight: 700; /* Bolder text */
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, box-shadow 0.2s ease;
             width: 100%;
             border: none;
             margin-top: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* Added shadow */
         }
         .modal-form button[type="submit"]:hover {
             background-color: #15803d; /* Green 700 */
+            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08); /* Darker shadow on hover */
+        }
+        .modal-form button[type="submit"]:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+        }
+        /* Message box for success/error */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: fadeOut 5s forwards;
+        }
+        .message-box.success {
+            background-color: #22c55e;
+        }
+        .message-box.error {
+            background-color: #ef4444;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; display: none; }
         }
     </style>
 </head>
@@ -603,57 +647,67 @@
         </div>
     </div>
 
-<!-- Feedback Modal HTML -->
-<div id="feedback-modal" class="modal-overlay">
-    <div class="modal-dialog">
-        <button class="close-button" id="close-feedback-modal">&times;</button>
-        <h2>Send Us Your Feedback</h2>
-        <p class="modal-subtitle text-red-600 font-semibold">
-            **Please do NOT include any personal or sensitive information.**
-            This feedback is anonymous.
-        </p>
-        <!-- Form Tag: 'name' attribute must match 'value' of the hidden 'form-name' input -->
-        <!-- 'data-netlify="true"' enables Netlify's processing -->
-        <!-- 'data-netlify-honeypot="bot-field"' enables honeypot spam protection -->
-        <form id="feedback-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-            <!-- IMPORTANT: This hidden field is crucial for Netlify to correctly identify the form name when submitted via JavaScript -->
-            <input type="hidden" name="form-name" value="feedback">
-            
-            <!-- Honeypot field for spam prevention. Keep this field completely hidden from human users. -->
-            <p style="display: none !important;">
-                <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
+    <!-- Feedback Modal HTML -->
+    <div id="feedback-modal" class="modal-overlay">
+        <div class="modal-dialog">
+            <button class="close-button" id="close-feedback-modal">&times;</button>
+            <h2>Send Us Your Feedback</h2>
+            <p class="modal-subtitle text-red-600 font-semibold">
+                **Please do NOT include any personal or sensitive information.**
+                This feedback is anonymous.
             </p>
+            <!-- Form Tag: 'name' attribute must match 'value' of the hidden 'form-name' input -->
+            <!-- 'data-netlify="true"' enables Netlify's processing -->
+            <!-- 'data-netlify-honeypot="bot-field"' enables honeypot spam protection -->
+            <form id="feedback-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+                <!-- IMPORTANT: This hidden field is crucial for Netlify to correctly identify the form name when submitted via JavaScript -->
+                <input type="hidden" name="form-name" value="feedback">
+                
+                <!-- Honeypot field for spam prevention. Keep this field completely hidden from human users. -->
+                <p style="display: none !important;">
+                    <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
+                </p>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
-                <div class="flex flex-col sm:flex-row sm:space-x-4">
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
-                        <span class="ml-2 text-gray-700">Bug Report</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
-                        <span class="ml-2 text-gray-700">Feature Request</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
-                        <span class="ml-2 text-gray-700">General Feedback</span>
-                    </label>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
+                    <div class="flex flex-col sm:flex-row sm:space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
+                            <span class="ml-2 text-gray-700">Bug Report</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
+                            <span class="ml-2 text-gray-700">Feature Request</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
+                            <span class="ml-2 text-gray-700">General Feedback</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label for="feedbackDescription" class="text-sm">Description:</label>
-                <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
-            </div>
-            
-            <!-- Hidden field to capture user agent string for debugging, not PII -->
-            <input type="hidden" id="userAgent" name="userAgent">
+                <div class="mb-4">
+                    <label for="feedbackDescription" class="text-sm">Description:</label>
+                    <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
+                </div>
+                
+                <input type="hidden" id="userAgent" name="userAgent">
 
-            <button type="submit">Send Feedback</button>
-        </form>
+                <button type="submit">Send Feedback</button>
+            </form>
+        </div>
     </div>
-</div>
+
+    <!-- This hidden form is crucial for Netlify to correctly detect and register the form during build. -->
+    <!-- It will not be visible to users. -->
+    <form name="feedback" netlify hidden>
+        <input type="text" name="feedbackType" value="dummy">
+        <textarea name="description">dummy</textarea>
+        <input type="text" name="userAgent" value="dummy">
+        <input type="hidden" name="form-name" value="feedback">
+        <input type="text" name="bot-field" value="dummy">
+    </form>
+
     <script>
         // Data for popular PHEVs in Australia (L/100km for fuel-only mode, kWh/100km for EV)
         // Note: Fuel efficiency values are for when the battery is depleted (fuel-only mode).
