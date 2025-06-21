@@ -7,7 +7,7 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
@@ -387,7 +387,7 @@
             border-radius: 1rem;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             width: 90%;
-            max-width: 650px; /* Increased for wider textarea */
+            max-width: 500px;
             position: relative;
             transform: translateY(20px); /* Small subtle animation */
             transition: transform 0.3s ease-out;
@@ -434,6 +434,28 @@
         .modal-form textarea {
             min-height: 100px;
             resize: vertical;
+        }
+        .modal-form button[type="submit"] {
+            background-color: #16a34a; /* Green 600 */
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            border: none;
+            margin-top: 1.5rem;
+        }
+        .modal-form button[type="submit"]:hover {
+            background-color: #15803d; /* Green 700 */
+        }
+
+        /* Styles for the new searchable dropdown */
+        .car-select-wrapper {
+            position: relative;
+        }
+        #car-search-input {
             width: 100%;
             padding: 0.75rem 1rem;
             border: 1px solid #cbd5e1;
@@ -441,62 +463,129 @@
             font-size: 1rem;
             color: #1e293b;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box; /* Ensure padding doesn't add to width */
         }
-        .modal-form textarea:focus {
+        #car-search-input:focus {
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
-        .modal-form button[type="submit"] {
-            background-color: #16a34a; /* Green 600 */
-            color: #ffffff;
-            padding: 1rem 1.5rem; /* Increased padding */
-            border-radius: 0.75rem; /* Slightly more rounded */
-            font-size: 1.125rem; /* Larger font size */
-            font-weight: 700; /* Bolder text */
+        #car-options-list {
+            position: absolute;
+            top: 100%; /* Position below the input */
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-height: 200px; /* Limit height and make scrollable */
+            overflow-y: auto;
+            z-index: 50; /* Ensure it's above other elements */
+            list-style: none; /* Remove default list styling */
+            padding: 0;
+            margin: 0.25rem 0 0 0; /* Small margin from input */
+            display: none; /* Hidden by default */
+        }
+        #car-options-list.visible {
+            display: block;
+        }
+        #car-options-list li {
+            padding: 0.75rem 1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease, box-shadow 0.2s ease;
-            width: 100%;
-            border: none;
-            margin-top: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); /* Added shadow */
+            transition: background-color 0.2s ease;
+            color: #334155;
+            font-size: 0.95rem;
         }
-        .modal-form button[type="submit"]:hover {
-            background-color: #15803d; /* Green 700 */
-            box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08); /* Darker shadow on hover */
+        #car-options-list li:hover {
+            background-color: #f1f5f9; /* Light gray on hover */
         }
-        .modal-form button[type="submit"]:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+        #car-options-list li.selected {
+            background-color: #e0f2fe; /* Light blue for selected */
+            font-weight: 600;
         }
-        /* Message box for success/error */
-        .message-box {
+        #car-options-list li:first-child {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        #car-options-list li:last-child {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
+        /* Styles for the new update banner */
+        .update-banner {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            border-radius: 8px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #dbeafe; /* Light blue background */
+            color: #1e40af; /* Dark blue text */
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 100; /* Above other content but below modals */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            animation: slideDown 0.5s ease-out;
+        }
+        .update-banner.hidden {
+            display: none;
+        }
+        .update-banner-close {
+            background: none;
+            border: none;
+            color: #1e40af;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s ease;
+        }
+        .update-banner-close:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Styles for the "New!" badge */
+        .new-badge {
+            display: inline-block;
+            background-color: #ef4444; /* Red 500 */
             color: white;
-            font-weight: bold;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            animation: fadeOut 5s forwards;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.3rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            transform: rotate(-5deg); /* Slight tilt for attention */
+            animation: bounceIn 0.8s ease-out forwards;
+            opacity: 0; /* Start hidden for animation */
         }
-        .message-box.success {
-            background-color: #22c55e;
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(-5deg); opacity: 1; }
+            70% { transform: scale(0.9) rotate(-5deg); }
+            100% { transform: scale(1) rotate(-5deg); opacity: 1; }
         }
-        .message-box.error {
-            background-color: #ef4444;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; display: none; }
-        }
+
     </style>
 </head>
 <body>
+    <!-- New Update Banner -->
+    <div id="update-banner" class="update-banner">
+        <p>✨ **New Version Available!** We've added many new car models and a searchable dropdown. Check it out!</p>
+        <button id="close-banner" class="update-banner-close">&times;</button>
+    </div>
+
     <div class="container">
         <div class="input-column">
             <div class="logo-display">
@@ -529,10 +618,11 @@
             </div>
 
             <div class="mb-4 input-group">
-                <label for="car-select" class="block text-sm">Select Car Model:</label>
-                <select id="car-select" class="mt-1">
-                    <option value="">Custom Input</option>
-                </select>
+                <label for="car-search-input" class="block text-sm">Select Car Model: <span id="new-badge" class="new-badge">NEW!</span></label>
+                <div class="car-select-wrapper">
+                    <input type="text" id="car-search-input" placeholder="Search or select car model..." class="mt-1">
+                    <ul id="car-options-list" class="hidden"></ul>
+                </div>
             </div>
 
             <div class="input-grid">
@@ -644,100 +734,123 @@
         <!-- Global Copyright Notice -->
         <div class="global-copyright">
             © 2025 UmemeConnect. All rights reserved.
+            <span id="app-version" class="ml-2 text-gray-500"></span>
         </div>
     </div>
 
-    <!-- Feedback Modal HTML -->
-    <div id="feedback-modal" class="modal-overlay">
-        <div class="modal-dialog">
-            <button class="close-button" id="close-feedback-modal">&times;</button>
-            <h2>Send Us Your Feedback</h2>
-            <p class="modal-subtitle text-red-600 font-semibold">
-                **Please do NOT include any personal or sensitive information.**
-                This feedback is anonymous.
+<!-- Feedback Modal HTML -->
+<div id="feedback-modal" class="modal-overlay">
+    <div class="modal-dialog">
+        <button class="close-button" id="close-feedback-modal">&times;</button>
+        <h2>Send Us Your Feedback</h2>
+        <p class="modal-subtitle text-red-600 font-semibold">
+            **Please do NOT include any personal or sensitive information.**
+            This feedback is anonymous.
+        </p>
+        <!-- CRITICAL: Added data-netlify-honeypot for spam prevention -->
+        <form id="feedback-form" class="modal-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+            <!-- CRITICAL: Hidden field to tell Netlify the form's name for AJAX submissions -->
+            <input type="hidden" name="form-name" value="feedback">
+            
+            <!-- Honeypot field for spam prevention - keep it hidden -->
+            <p class="hidden">
+                <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
             </p>
-            <!-- Form Tag: 'name' attribute must match 'value' of the hidden 'form-name' input -->
-            <!-- 'data-netlify="true"' enables Netlify's processing -->
-            <!-- 'data-netlify-honeypot="bot-field"' enables honeypot spam protection -->
-            <form id="feedback-form" name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
-                <!-- IMPORTANT: This hidden field is crucial for Netlify to correctly identify the form name when submitted via JavaScript -->
-                <input type="hidden" name="form-name" value="feedback">
-                
-                <!-- Honeypot field for spam prevention. Keep this field completely hidden from human users. -->
-                <p style="display: none !important;">
-                    <label>Don’t fill this out if you’re human: <input name="bot-field"></label>
-                </p>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
-                    <div class="flex flex-col sm:flex-row sm:space-x-4">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
-                            <span class="ml-2 text-gray-700">Bug Report</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
-                            <span class="ml-2 text-gray-700">Feature Request</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
-                            <span class="ml-2 text-gray-700">General Feedback</span>
-                        </label>
-                    </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Feedback Type:</label>
+                <div class="flex flex-col sm:flex-row sm:space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="Bug Report" class="form-radio" checked>
+                        <span class="ml-2 text-gray-700">Bug Report</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="Feature Request" class="form-radio">
+                        <span class="ml-2 text-gray-700">Feature Request</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="feedbackType" value="General Feedback" class="form-radio">
+                        <span class="ml-2 text-gray-700">General Feedback</span>
+                    </label>
                 </div>
+            </div>
 
-                <div class="mb-4">
-                    <label for="feedbackDescription" class="text-sm">Description:</label>
-                    <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
-                </div>
-                
-                <input type="hidden" id="userAgent" name="userAgent">
+            <div class="mb-4 input-group">
+                <label for="feedbackDescription" class="text-sm">Description:</label>
+                <textarea id="feedbackDescription" name="description" rows="5" placeholder="Please describe your bug, idea, or general feedback here. Remember, DO NOT include any personal details." required></textarea>
+            </div>
+            
+            <!-- Hidden field to capture user agent -->
+            <input type="hidden" id="userAgent" name="userAgent">
 
-                <button type="submit">Send Feedback</button>
-            </form>
-        </div>
+            <button type="submit">Send Feedback</button>
+        </form>
     </div>
-
-    <!-- This hidden form is crucial for Netlify to correctly detect and register the form during build. -->
-    <!-- It will not be visible to users. -->
-    <form name="feedback" netlify hidden>
-        <input type="text" name="feedbackType" value="dummy">
-        <textarea name="description">dummy</textarea>
-        <input type="text" name="userAgent" value="dummy">
-        <input type="hidden" name="form-name" value="feedback">
-        <input type="text" name="bot-field" value="dummy">
-    </form>
+</div>
 
     <script>
+        // Current application version
+        const APP_VERSION = "1.1.0"; // Major.Minor.Patch
+        const HAS_SEEN_UPDATE_BANNER_KEY = 'hasSeenUpdateBanner_v1_1_0'; // Unique key for this version's banner
+
         // Data for popular PHEVs in Australia (L/100km for fuel-only mode, kWh/100km for EV)
         // Note: Fuel efficiency values are for when the battery is depleted (fuel-only mode).
         // EV efficiency values are generally combined WLTP figures or derived from battery capacity/range.
         // This data would ideally come from an API, but is hardcoded here due to API availability limitations for client-side apps.
         const phevData = [
+            { name: "Alfa Romeo Tonale PHEV", fuel: 7.0, ev: 19.0 },
+            { name: "Audi Q3 TFSI e", fuel: 6.5, ev: 17.5 },
             { name: "Audi Q5 TFSI e", fuel: 8.0, ev: 22.5 },
+            { name: "BMW 330e", fuel: 7.0, ev: 16.5 },
+            { name: "BMW 530e", fuel: 7.5, ev: 17.0 },
+            { name: "BMW X1 xDrive30e", fuel: 6.8, ev: 18.0 },
+            { name: "BMW X3 xDrive30e", fuel: 7.8, ev: 19.5 },
             { name: "BMW X5 xDrive50e", fuel: 11.5, ev: 9.1 },
             { name: "BYD Sealion 6 Dynamic", fuel: 4.8, ev: 16.9 },
             { name: "BYD Sealion 6 Premium", fuel: 5.8, ev: 17.9 },
             { name: "BYD Shark", fuel: 7.0, ev: 29.6 }, // Estimated fuel-only, EV calculated from 29.6kWh battery/100km range
+            { name: "BYD Seal DM-i", fuel: 5.0, ev: 16.0 },
             { name: "Cupra Formentor VZ e-Hybrid", fuel: 6.5, ev: 14.1 },
             { name: "Cupra Leon VZ e-Hybrid", fuel: 6.5, ev: 14.1 },
+            { name: "Denza D9", fuel: 6.5, ev: 22.0 },
             { name: "Ford Escape PHEV", fuel: 5.5, ev: 15.2 },
+            { name: "Ford Kuga PHEV", fuel: 5.5, ev: 15.0 }, // Same platform as Escape, but for other markets
             { name: "GWM Haval H6 PHEV", fuel: 5.4, ev: 19.7 },
+            { name: "GWM Tank 300 PHEV", fuel: 9.5, ev: 28.0 },
+            { name: "Honda CR-V e:PHEV", fuel: 6.0, ev: 18.0 },
             { name: "Hyundai Santa Fe PHEV", fuel: 6.5, ev: 18.0 },
+            { name: "Hyundai Tucson PHEV", fuel: 6.5, ev: 18.0 },
             { name: "Jeep Grand Cherokee 4xe", fuel: 10.8, ev: 27.5 },
+            { name: "Jeep Wrangler 4xe", fuel: 10.0, ev: 24.0 },
+            { name: "Kia Niro PHEV", fuel: 4.5, ev: 14.0 },
             { name: "Kia Sorento PHEV", fuel: 6.0, ev: 20.6 },
             { name: "Kia Sportage PHEV", fuel: 6.0, ev: 17.7 },
             { name: "Land Rover Defender P400e", fuel: 10.5, ev: 19.2 },
+            { name: "Lexus NX 450h+", fuel: 5.5, ev: 18.5 },
             { name: "Mazda CX-60 P50e", fuel: 7.0, ev: 21.1 },
+            { name: "Mazda CX-90 PHEV", fuel: 8.5, ev: 27.0 },
             { name: "Mercedes-Benz C300e", fuel: 7.0, ev: 18.8 },
+            { name: "Mercedes-Benz E300e", fuel: 7.5, ev: 17.0 },
             { name: "Mercedes-Benz GLC300e", fuel: 8.0, ev: 20.8 },
+            { name: "Mercedes-Benz GLE 350e", fuel: 9.0, ev: 25.0 },
             { name: "MG HS Plus EV", fuel: 5.5, ev: 16.9 },
             { name: "Mitsubishi Outlander PHEV", fuel: 6.0, ev: 23.8 },
-            { name: "Porsche Cayenne E-Hybrid", fuel: 10.0, ev: 24.6 }
+            { name: "Peugeot 3008 GT Sport Plug-in Hybrid", fuel: 6.2, ev: 16.0 },
+            { name: "Porsche Cayenne E-Hybrid", fuel: 10.0, ev: 24.6 },
+            { name: "Porsche Panamera 4 E-Hybrid", fuel: 9.0, ev: 25.0 },
+            { name: "Renault Captur E-Tech Plug-in Hybrid", fuel: 5.5, ev: 16.0 },
+            { name: "Skoda Superb iV", fuel: 5.8, ev: 15.5 },
+            { name: "Subaru Crosstrek Hybrid", fuel: 7.0, ev: 16.5 },
+            { name: "Toyota C-HR PHEV", fuel: 5.0, ev: 16.0 },
+            { name: "Toyota RAV4 Prime", fuel: 6.0, ev: 18.0 },
+            { name: "Volkswagen Tiguan eHybrid", fuel: 6.0, ev: 15.5 },
+            { name: "Volvo XC60 Recharge", fuel: 8.5, ev: 20.0 },
+            { name: "Volvo XC90 Recharge", fuel: 9.5, ev: 22.0 }
         ];
 
         // Get DOM elements
-        const carSelect = document.getElementById('car-select');
+        const carSearchInput = document.getElementById('car-search-input');
+        const carOptionsList = document.getElementById('car-options-list');
         const fuelEfficiencyInput = document.getElementById('fuel-efficiency');
         const batteryEfficiencyInput = document.getElementById('battery-efficiency');
         const electricityPriceInput = document.getElementById('electricity-price');
@@ -765,38 +878,81 @@
         const feedbackForm = document.getElementById('feedback-form');
         const userAgentInput = document.getElementById('userAgent');
 
+        // New elements for update
+        const appVersionSpan = document.getElementById('app-version');
+        const updateBanner = document.getElementById('update-banner');
+        const closeBannerButton = document.getElementById('close-banner');
+        const newBadge = document.getElementById('new-badge');
+
 
         // Chart instance
         let costChart;
 
-        // Populate car selection dropdown
-        function populateCarSelect() {
-            // Clear existing options first (except Custom Input)
-            carSelect.innerHTML = '<option value="">Custom Input</option>';
-            phevData.sort((a, b) => a.name.localeCompare(b.name)).forEach(car => { // Sort alphabetically
-                const option = document.createElement('option');
-                option.value = car.name;
-                option.textContent = car.name;
-                carSelect.appendChild(option);
-            });
+        // Populate car selection dropdown (now a searchable list)
+        function populateCarSearchList(filterText = '') {
+            carOptionsList.innerHTML = ''; // Clear existing options
+            const lowerCaseFilterText = filterText.toLowerCase();
+
+            // Always add a "Custom Input" option first if no filter or if it matches
+            if (filterText === '' || 'custom input'.includes(lowerCaseFilterText)) {
+                const customOption = document.createElement('li');
+                customOption.textContent = 'Custom Input';
+                customOption.dataset.carName = ''; // Use empty string to signify custom
+                carOptionsList.appendChild(customOption);
+            }
+
+            phevData
+                .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
+                .filter(car => car.name.toLowerCase().includes(lowerCaseFilterText)) // Filter by search text
+                .forEach(car => {
+                    const option = document.createElement('li');
+                    option.textContent = car.name;
+                    option.dataset.carName = car.name; // Store car name for easy lookup
+                    carOptionsList.appendChild(option);
+                });
+
+            // Show/hide the list based on filter results
+            if (carOptionsList.children.length > 0) {
+                carOptionsList.classList.add('visible');
+            } else {
+                carOptionsList.classList.remove('visible');
+            }
         }
 
-        // Handle car selection change
-        carSelect.addEventListener('change', (event) => {
-            const selectedCarName = event.target.value;
-            if (selectedCarName === "") {
-                // Custom input selected, set default values
-                fuelEfficiencyInput.value = "7.5";
-                batteryEfficiencyInput.value = "18.0";
-            } else {
-                const selectedCar = phevData.find(car => car.name === selectedCarName);
-                if (selectedCar) {
-                    fuelEfficiencyInput.value = selectedCar.fuel.toFixed(1);
-                    batteryEfficiencyInput.value = selectedCar.ev.toFixed(1);
-                }
-            }
-            calculateBreakevenAndTable(); // Re-calculate immediately after selecting a car
+        // Handle car search input
+        carSearchInput.addEventListener('input', (event) => {
+            populateCarSearchList(event.target.value);
         });
+
+        // Handle selection from the custom dropdown list
+        carOptionsList.addEventListener('click', (event) => {
+            const selectedCarName = event.target.dataset.carName;
+            if (selectedCarName !== undefined) { // Ensure a list item was clicked
+                carSearchInput.value = selectedCarName === '' ? 'Custom Input' : selectedCarName;
+                carOptionsList.classList.remove('visible'); // Hide the list
+
+                if (selectedCarName === "") {
+                    // Custom input selected, set default values
+                    fuelEfficiencyInput.value = "7.5";
+                    batteryEfficiencyInput.value = "18.0";
+                } else {
+                    const selectedCar = phevData.find(car => car.name === selectedCarName);
+                    if (selectedCar) {
+                        fuelEfficiencyInput.value = selectedCar.fuel.toFixed(1);
+                        batteryEfficiencyInput.value = selectedCar.ev.toFixed(1);
+                    }
+                }
+                calculateBreakevenAndTable(); // Re-calculate immediately after selecting a car
+            }
+        });
+
+        // Hide options list when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.car-select-wrapper')) {
+                carOptionsList.classList.remove('visible');
+            }
+        });
+
 
         // Toggle novated lease options visibility
         applyNovatedDiscountCheckbox.addEventListener('change', () => {
@@ -845,7 +1001,7 @@
             if (isNaN(fuelEfficiency) || isNaN(batteryEfficiency) || fuelEfficiency <= 0 || batteryEfficiency <= 0) {
                 displayMessage("Please enter valid positive numbers for car efficiencies.", "error");
                 // Clear outputs if inputs are invalid
-                costComparisonOutput.textContent = "Please enter valid efficiency values.";
+                costComparisonOutput.innerHTML = `<div class="cost-output-title">Invalid Car Efficiencies</div><p>Please enter valid positive numbers for car fuel and battery efficiencies to see a comparison.</p>`;
                 costComparisonOutput.className = "output-similar-cost"; // Use a neutral style for error
                 if (costChart) costChart.destroy();
                 breakevenTable.innerHTML = '';
@@ -1195,20 +1351,23 @@
             }
             document.body.appendChild(messageBox);
 
-            // Define fadeOut animation
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @keyframes fadeOut {
-                    0% { opacity: 1; }
-                    80% { opacity: 1; }
-                    100% { opacity: 0; display: none; }
-                }
-            `;
-            document.head.appendChild(style);
+            // Define fadeOut animation (re-add it if it was removed)
+            if (!document.getElementById('fadeOutKeyframes')) {
+                const style = document.createElement('style');
+                style.id = 'fadeOutKeyframes';
+                style.innerHTML = `
+                    @keyframes fadeOut {
+                        0% { opacity: 1; }
+                        80% { opacity: 1; }
+                        100% { opacity: 0; display: none; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
 
             setTimeout(() => {
                 messageBox.remove();
-                style.remove(); // Clean up the style tag
+                // We'll keep the keyframes style in the head, no need to remove it after each message
             }, 5000); // Message disappears after 5 seconds
         }
 
@@ -1244,56 +1403,67 @@
 
         // Modified feedback form submission for Netlify
         feedbackForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default browser form submission
+            e.preventDefault(); // Prevent default form submission
 
             const formData = new FormData(feedbackForm);
-            // Convert FormData to URL-encoded string, which Netlify's backend expects for AJAX forms
-            const encodedData = new URLSearchParams(formData).toString();
-
-            const submitButton = feedbackForm.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = true; // Disable button to prevent multiple submissions
-                submitButton.textContent = 'Sending...'; // Provide feedback to the user
-            }
 
             try {
-                // Submit the form data to the current page's URL. Netlify intercepts this POST request.
-                const response = await fetch(location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded' // Essential header for Netlify forms
-                    },
-                    body: encodedData // The URL-encoded form data
+                const response = await fetch("/", { // Submit to current page for Netlify to intercept
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }, // Required for Netlify to parse
+                    body: new URLSearchParams(formData).toString(),
                 });
 
-                if (response.ok) { // Check if the response status is in the 200-299 range
+                if (response.ok) {
                     displayMessage('Thank you for your feedback! It has been received.', 'success');
-                    feedbackForm.reset(); // Clear all form fields after successful submission
+                    feedbackForm.reset(); // Clear form fields
                 } else {
-                    // Log more details in case of an HTTP error response from the server
-                    console.error('Netlify form submission failed (HTTP error):', response.status, response.statusText);
-                    displayMessage('Failed to send feedback. Please try again. (Error Code: ' + response.status + ')', 'error');
+                    displayMessage('Failed to send feedback. Please try again later.', 'error');
                 }
             } catch (error) {
-                // Catch network errors or issues with the fetch operation itself
-                console.error('Network error during form submission:', error);
-                displayMessage('An error occurred. Please check your internet connection. (Details in console)', 'error');
+                console.error('Network or submission error:', error);
+                displayMessage('An error occurred. Please check your internet connection and try again.', 'error');
             } finally {
-                // Re-enable the submit button and reset its text after the process
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Send Feedback';
-                }
-                // Close the modal after a short delay so the user can see the message
-                setTimeout(() => {
-                    feedbackModal.classList.remove('visible');
-                }, 1500); // 1.5 second delay
+                feedbackModal.classList.remove('visible'); // Always close modal after attempt
             }
         });
 
+
         // Initial setup
         window.onload = () => {
-            populateCarSelect();
+            // Display the app version
+            if (appVersionSpan) {
+                appVersionSpan.textContent = `v${APP_VERSION}`;
+            }
+
+            // Show update banner if not seen before for this version
+            if (updateBanner && !localStorage.getItem(HAS_SEEN_UPDATE_BANNER_KEY)) {
+                updateBanner.classList.remove('hidden');
+            }
+
+            // Hide new badge after a delay or on first interaction with the search input
+            // For now, it will simply be visible
+            // If you want to hide it after a certain time:
+            setTimeout(() => {
+                 if (newBadge) {
+                     newBadge.style.opacity = '0';
+                     newBadge.style.transition = 'opacity 1s ease-out';
+                     setTimeout(() => { newBadge.style.display = 'none'; }, 1000); // Hide completely after fade
+                 }
+            }, 10000); // Hide after 10 seconds
+
+            // Attach event listener for closing the banner
+            if (closeBannerButton) {
+                closeBannerButton.addEventListener('click', () => {
+                    if (updateBanner) {
+                        updateBanner.classList.add('hidden');
+                        localStorage.setItem(HAS_SEEN_UPDATE_BANNER_KEY, 'true'); // Mark as seen
+                    }
+                });
+            }
+
+
+            populateCarSearchList(); // Initial population of the searchable list
             // Set default values for custom input initially
             fuelEfficiencyInput.value = "7.5";
             batteryEfficiencyInput.value = "18.0";
