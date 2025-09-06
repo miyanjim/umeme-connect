@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Energy Tariff Comparison Tool</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ96CqE+3t/hK2J2pQ+k/y6Jd2J9gD6I6z4t0n7E4L4L2V7G7Q+" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+		
+		.logo-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+		
+        .logo-display svg {
+            width: 100%; /* Make it fluid within its parent */
+            max-width: 250px; /* Limit its max size to a reasonable width */
+            height: auto; /* Maintain aspect ratio */
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="min-h-screen py-8 px-4 flex items-center justify-center">
+        <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-2xl w-full">
+		
+		<div class="logo-display">
+                <!-- UmemeConnect Logo (Emphasized Umeme) - REVISED SPACING AND NO COPYRIGHT SYMBOL -->
+                <svg viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title-umeme-logo desc-umeme-logo">
+                    <title id="title-umeme-logo">UmemeConnect Logo (Emphasized Umeme)</title>
+                    <desc id="desc-umeme-logo">Logo focusing on 'Umeme' with integrated energy flow and subtle 'Connect' text.</desc>
+                    <defs>
+                        <linearGradient id="umemeGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#3b82f6" />   <!-- Blue -->
+                            <stop offset="50%" stop-color="#16a34a" />   <!-- Green -->
+                            <stop offset="100%" stop-color="#f59e0b" /> <!-- Orange -->
+                        </linearGradient>
+                    </defs>
+
+                    <!-- The main 'U' with integrated energy flow -->
+                    <text x="30" y="70" font-family="Inter, sans-serif" font-size="60" font-weight="bold" fill="url(#umemeGradient)">U</text>
+                    <!-- Dynamic energy flow paths within/around the 'U' -->
+                    <path d="M 35 35 Q 40 25, 45 35 Q 50 45, 45 45 L 35 45 Z" fill="url(#umemeGradient)" opacity="0.7" transform="rotate(10 40 40)"/>
+                    <path d="M 40 50 Q 45 40, 50 50 Q 55 60, 50 60 L 40 60 Z" fill="url(#umemeGradient)" opacity="0.6" transform="rotate(-15 45 50)"/>
+
+
+                    <!-- Text 'meme' to complete 'Umeme' - adjusted x for closer spacing -->
+                    <text x="68" y="70" font-family="Inter, sans-serif" font-size="40" font-weight="bold" fill="#1e293b">meme </text>
+
+                    <!-- Subtle 'Connect' text below 'Umeme' - adjusted x for better alignment and increased font size -->
+                    <text x="100" y="95" font-family="Inter, sans-serif" font-size="20" text-anchor="middle" fill="#475569">Connect</text>
+                </svg>
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+                <i class="fas fa-bolt text-yellow-500 mr-2"></i> Synergy Tariff Comparison Tool
+            </h1>
+            </div>
+		
+
+
+            <!-- Mode Selector -->
+            <div class="flex justify-center mb-6">
+                <div class="bg-gray-200 rounded-full p-1 flex items-center">
+                    <button id="simple-mode-btn" class="py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 bg-indigo-600 text-white shadow-md hover:bg-indigo-700">
+                        Simple Mode
+                    </button>
+                    <button id="advanced-mode-btn" class="py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 text-gray-700 hover:bg-gray-300">
+                        Advanced Mode
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <i class="fas fa-cloud-upload-alt text-indigo-500 mr-2"></i> Your Energy Data
+                </h2>
+
+                <!-- Tariff Selection Inputs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="current-import-tariff" class="block text-sm font-medium text-gray-700">Your Current Import Tariff</label>
+                        <select id="current-import-tariff" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                            <option value="A1">Home Plan (A1)</option>
+                            <option value="MiddaySaver">Midday Saver</option>
+                            <option value="EVAddOn">EV Add-On</option>
+                            <option value="SmartHomePlan">Smart Home Plan (Legacy)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="current-export-tariff" class="block text-sm font-medium text-gray-700">Your Current Solar Export Tariff</label>
+                        <select id="current-export-tariff" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                            <option value="DEBS">DEBS</option>
+                            <option value="REBS">REBS (Legacy)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Simple Mode Inputs -->
+                <div id="simple-mode-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="simple-import" class="block text-sm font-medium text-gray-700">Daily Grid Import (kWh)</label>
+                            <input type="number" id="simple-import" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 15" min="0">
+                        </div>
+                        <div>
+                            <label for="simple-export" class="block text-sm font-medium text-gray-700">Daily Grid Export (kWh)</label>
+                            <input type="number" id="simple-export" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 10" min="0">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="simple-profile" class="block text-sm font-medium text-gray-700">When do you use most of your energy?</label>
+                        <select id="simple-profile" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                            <option value="morning">Morning (6am - 9am)</option>
+                            <option value="midday">Midday (9am - 3pm)</option>
+                            <option value="evening">Evening (3pm - 9pm)</option>
+                            <option value="overnight">Overnight (9pm - 6am)</option>
+                            <option value="flat">Flat (evenly spread)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Advanced Mode Inputs -->
+                <div id="advanced-mode-container" class="hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="advanced-import" class="block text-sm font-medium text-gray-700">Advanced Grid Import (48 intervals, kWh)</label>
+                            <textarea id="advanced-import" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" rows="3" placeholder="e.g., 0.1, 0.1, 0.2, 0.3, ... (48 comma-separated values)"></textarea>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Enter 48 comma-separated values for each 30-minute interval of the day.
+                            </p>
+                        </div>
+                        <div>
+                            <label for="advanced-export" class="block text-sm font-medium text-gray-700">Advanced Grid Export (48 intervals, kWh)</label>
+                            <textarea id="advanced-export" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" rows="3" placeholder="e.g., 0, 0, 0, 0.5, 1.2, 2.5, ... (48 comma-separated values)"></textarea>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Enter 48 comma-separated values for each 30-minute interval of the day.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-message" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-md border border-red-200"></div>
+
+                <div class="mt-6 text-center">
+                    <button id="calculate-btn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+                        <i class="fas fa-calculator mr-2"></i> Calculate & Compare
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div id="results-container" class="hidden mt-8">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Comparison Results</h2>
+                <div class="overflow-x-auto shadow-xl rounded-2xl">
+                    <table class="min-w-full divide-y divide-gray-200 bg-white">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider rounded-tl-2xl">Tariff Combination</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Daily Import Cost</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Daily Export Revenue</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider rounded-tr-2xl">Net Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table-body" class="divide-y divide-gray-200">
+                            <!-- Results will be injected here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tariff Details Section -->
+            <div class="mt-12 p-6 bg-gray-100 rounded-2xl shadow-inner">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Tariff Details & Assumptions</h3>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Import Tariffs</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                            <li>
+                                <strong>Home Plan (A1):</strong> A simple flat rate tariff where the cost per kWh is the same at all times. Ideal for households with consistent energy usage throughout the day.
+                            </li>
+                            <li>
+                                <strong>Midday Saver:</strong> A time-of-use tariff with lower rates during the midday (9am-3pm) and higher rates during the peak evening period (3pm-9pm). Designed to reward shifting energy usage to off-peak times.
+                            </li>
+                            <li>
+                                <strong>EV Add-On:</strong> A time-of-use tariff similar to Midday Saver but with a special, even lower rate for overnight charging of electric vehicles.
+                            </li>
+                            <li>
+                                <strong>Smart Home Plan (Legacy):</strong> A time-of-use tariff for existing customers only, with a more complex rate structure and different rates for weekdays and weekends.
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Export Tariffs</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                            <li>
+                                <strong>DEBS (Distributed Energy Buyback Scheme):</strong> The current scheme for new and upgraded systems. It offers a higher buyback rate for electricity exported during the evening peak period (3pm-9pm), and a lower rate at all other times.
+                            </li>
+                            <li>
+                                <strong>REBS (Renewable Energy Buyback Scheme):</strong> A legacy scheme that offers a single flat rate for all exported electricity, regardless of the time of day.
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Calculation Assumptions</h4>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
+                            <li>All calculations are based on the input daily data. The net annual cost is simply the daily cost multiplied by 365 days.</li>
+                            <li>Daily usage patterns are assumed to be consistent throughout the year.</li>
+                            <li>All prices (including supply charges and GST) are based on the latest publicly available Synergy data as of July 2025.</li>
+                            <li>This tool provides an estimate. Actual bills may vary due to factors like varying daily usage, seasonal changes, and other fees or charges from your provider.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // State management
+            let mode = 'simple';
+
+            // DOM elements
+            const simpleModeBtn = document.getElementById('simple-mode-btn');
+            const advancedModeBtn = document.getElementById('advanced-mode-btn');
+            const simpleModeContainer = document.getElementById('simple-mode-container');
+            const advancedModeContainer = document.getElementById('advanced-mode-container');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const errorMessageDiv = document.getElementById('error-message');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsTableBody = document.getElementById('results-table-body');
+            
+            // Input elements
+            const simpleImportInput = document.getElementById('simple-import');
+            const simpleExportInput = document.getElementById('simple-export');
+            const simpleProfileSelect = document.getElementById('simple-profile');
+            const advancedImportTextarea = document.getElementById('advanced-import');
+            const advancedExportTextarea = document.getElementById('advanced-export');
+            const currentImportTariffSelect = document.getElementById('current-import-tariff');
+            const currentExportTariffSelect = document.getElementById('current-export-tariff');
+
+            // Tariff data - Updated for 2025 rates
+            const TariffData = {
+                A1: {
+                    displayName: 'Home Plan (A1)',
+                    supply: 116.0505, // Updated Supply Rate
+                    importRates: [
+                        { start: '00:00', end: '23:59', rate: 32.3719, name: 'Flat Rate' }, // Updated Import Rate
+                    ],
+                },
+                MiddaySaver: {
+                    displayName: 'Midday Saver',
+                    supply: 129.2269, // Updated Supply Rate
+                    importRates: [
+                        { start: '09:00', end: '15:00', rate: 8.6151, name: 'Super Off-Peak' }, // Updated Super Off-Peak Rate
+                        { start: '15:00', end: '21:00', rate: 53.8446, name: 'Peak' }, // Updated Peak Rate
+                        { start: '21:00', end: '09:00', rate: 23.6916, name: 'Off-Peak' }, // Updated Off-Peak Rate
+                    ],
+                },
+                EVAddOn: {
+                    displayName: 'EV Add-On',
+                    supply: 129.2269, // Updated Supply Rate
+                    importRates: [
+                        { start: '09:00', end: '15:00', rate: 8.6151, name: 'Super Off-Peak' }, // Updated Super Off-Peak Rate
+                        { start: '15:00', end: '21:00', rate: 53.8446, name: 'Peak' }, // Updated Peak Rate
+                        { start: '06:00', end: '09:00', rate: 23.6916, name: 'Off-Peak' }, // Updated Off-Peak Rate
+                        { start: '21:00', end: '23:00', rate: 23.6916, name: 'Off-Peak' }, // Updated Off-Peak Rate
+                        { start: '23:00', end: '06:00', rate: 19.3841, name: 'Overnight' }, // Updated Overnight Rate
+                    ],
+                },
+                SmartHomePlan: {
+                    displayName: 'Smart Home Plan (Legacy)',
+                    supply: 116.0505,
+                    importRates: [
+                        { start: '00:00', end: '07:00', rate: 16.9595, name: 'Off-Peak' },
+                        { start: '07:00', end: '15:00', rate: 32.2423, name: 'Weekday Shoulder' },
+                        { start: '15:00', end: '21:00', rate: 61.5633, name: 'Peak' },
+                        { start: '21:00', end: '23:59', rate: 16.9595, name: 'Off-Peak' },
+                    ],
+                },
+            };
+
+            const ExportTariffData = {
+                DEBS: {
+                    displayName: 'DEBS',
+                    exportRates: [
+                        { start: '15:00', end: '21:00', rate: 10, name: 'Peak' },
+                        { start: '00:00', end: '15:00', rate: 2, name: 'Off-Peak' },
+                        { start: '21:00', end: '23:59', rate: 2, name: 'Off-Peak' },
+                    ],
+                },
+                REBS: {
+                    displayName: 'REBS (Legacy)',
+                    exportRates: [
+                        { start: '00:00', end: '23:59', rate: 7.135, name: 'Flat Rate' },
+                    ],
+                },
+            };
+
+            // Helper function to convert time string (HH:MM) to minutes
+            const timeToMinutes = (time) => {
+                const [hours, minutes] = time.split(':').map(Number);
+                return hours * 60 + minutes;
+            };
+
+            // Helper function to get the rate for a given time and tariff
+            const getRateForTime = (tariffRates, time) => {
+                const currentTime = timeToMinutes(time);
+                for (const rateBand of tariffRates) {
+                    const startMinutes = timeToMinutes(rateBand.start);
+                    const endMinutes = timeToMinutes(rateBand.end);
+                    if (startMinutes < endMinutes) {
+                        if (currentTime >= startMinutes && currentTime < endMinutes) {
+                            return rateBand.rate;
+                        }
+                    } else { // Handles overnight periods
+                        if (currentTime >= startMinutes || currentTime < endMinutes) {
+                            return rateBand.rate;
+                        }
+                    }
+                }
+                return 0; // Default to 0 if no rate found
+            };
+
+            // Generates a 48-interval array for simple mode based on usage profile
+            const generateSimpleData = (dailyTotal, profile) => {
+                const intervals = Array(48).fill(0);
+                const totalToDistribute = parseFloat(dailyTotal);
+                if (isNaN(totalToDistribute) || totalToDistribute <= 0) {
+                    return intervals;
+                }
+                
+                const usageDistribution = {
+                    flat: { peakStart: 0, peakEnd: 48, peakShare: 1.0 },
+                    morning: { peakStart: 12, peakEnd: 18, peakShare: 0.6 }, // 6am-9am
+                    midday: { peakStart: 18, peakEnd: 30, peakShare: 0.6 }, // 9am-3pm
+                    evening: { peakStart: 30, peakEnd: 42, peakShare: 0.7 }, // 3pm-9pm
+                    overnight: { peakStart: 0, peakEnd: 12, peakShare: 0.5 }, // 9pm-6am
+                };
+
+                const profileData = usageDistribution[profile];
+                const peakUnits = totalToDistribute * profileData.peakShare;
+                const offPeakUnits = totalToDistribute - peakUnits;
+
+                const peakIntervals = profileData.peakEnd - profileData.peakStart;
+                const offPeakIntervals = 48 - peakIntervals;
+
+                // Handle case where peakIntervals or offPeakIntervals might be 0
+                const peakUsagePerInterval = peakIntervals > 0 ? peakUnits / peakIntervals : 0;
+                const offPeakUsagePerInterval = offPeakIntervals > 0 ? offPeakUnits / offPeakIntervals : 0;
+
+                for (let i = 0; i < 48; i++) {
+                    if (i >= profileData.peakStart && i < profileData.peakEnd) {
+                        intervals[i] = peakUsagePerInterval;
+                    } else {
+                        intervals[i] = offPeakUsagePerInterval;
+                    }
+                }
+                
+                return intervals;
+            };
+
+            // Generates a 48-interval array for export in simple mode
+            const generateSimpleExportData = (dailyTotal) => {
+                const intervals = Array(48).fill(0);
+                const totalToDistribute = parseFloat(dailyTotal);
+                if (isNaN(totalToDistribute) || totalToDistribute <= 0) return intervals;
+                
+                // Use a simple triangular distribution for solar export, peaking midday (9am - 3pm)
+                const peakStart = 18; // 9am
+                const peakEnd = 30; // 3pm
+                const numPeakIntervals = peakEnd - peakStart;
+                
+                // Calculate the peak height of the triangle
+                const maxPeakHeight = (2 * totalToDistribute) / numPeakIntervals;
+                
+                for (let i = peakStart; i < peakEnd; i++) {
+                    const relativePos = (i - peakStart) / (numPeakIntervals - 1);
+                    intervals[i] = maxPeakHeight * (relativePos <= 0.5 ? 2 * relativePos : 2 * (1 - relativePos));
+                }
+                
+                // Re-normalize to ensure the sum is exactly the daily total, accounting for floating point math
+                const currentSum = intervals.reduce((acc, val) => acc + val, 0);
+                if (currentSum > 0) {
+                    const scaleFactor = totalToDistribute / currentSum;
+                    return intervals.map(val => val * scaleFactor);
+                }
+                return intervals;
+            };
+
+            // Function to show/hide sections and update button styling
+            const switchMode = (newMode) => {
+                mode = newMode;
+                if (mode === 'simple') {
+                    simpleModeContainer.classList.remove('hidden');
+                    advancedModeContainer.classList.add('hidden');
+                    simpleModeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                    simpleModeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    advancedModeBtn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                    advancedModeBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                } else {
+                    simpleModeContainer.classList.add('hidden');
+                    advancedModeContainer.classList.remove('hidden');
+                    advancedModeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                    advancedModeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    simpleModeBtn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                    simpleModeBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                }
+                resultsContainer.classList.add('hidden');
+                errorMessageDiv.classList.add('hidden');
+            };
+
+            // Data validation for advanced mode
+            const validateAdvancedInput = (input) => {
+                if (!input.trim()) return "Input cannot be empty.";
+                const values = input.split(',').map(s => parseFloat(s.trim()));
+                if (values.length !== 48) {
+                    return `Input must have exactly 48 comma-separated numbers. Found: ${values.length}`;
+                }
+                if (values.some(isNaN) || values.some(val => val < 0)) {
+                    return "All values must be valid, non-negative numbers.";
+                }
+                return null;
+            };
+
+            // Function to calculate costs for a single tariff combination
+            const calculateSingleResult = (importData, exportData, importTariffKey, exportTariffKey) => {
+                const importTariff = TariffData[importTariffKey];
+                const exportTariff = ExportTariffData[exportTariffKey];
+                let dailyImportCost = 0;
+                let dailyExportRevenue = 0;
+                
+                for (let i = 0; i < 48; i++) {
+                    const hour = Math.floor(i / 2);
+                    const minute = (i % 2) * 30;
+                    const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                    
+                    const importRate = getRateForTime(importTariff.importRates, time);
+                    dailyImportCost += (importData[i] * importRate);
+
+                    const exportRate = getRateForTime(exportTariff.exportRates, time);
+                    dailyExportRevenue += (exportData[i] * exportRate);
+                }
+
+                const dailySupplyCharge = importTariff.supply;
+                const netDailyBill = (dailyImportCost + dailySupplyCharge - dailyExportRevenue) / 100;
+                const netAnnualCost = netDailyBill * 365;
+
+                return {
+                    importTariff: importTariffKey,
+                    exportTariff: exportTariffKey,
+                    dailyImportCost: dailyImportCost / 100,
+                    dailyExportRevenue: dailyExportRevenue / 100,
+                    netAnnualCost: netAnnualCost,
+                    dailySupplyCharge: dailySupplyCharge / 100,
+                };
+            };
+
+            // Main calculation function
+            const calculateCosts = () => {
+                let importData, exportData;
+                errorMessageDiv.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                
+                if (mode === 'simple') {
+                    const simpleImport = simpleImportInput.value;
+                    const simpleExport = simpleExportInput.value;
+                    if (simpleImport === '' || simpleExport === '' || parseFloat(simpleImport) < 0 || parseFloat(simpleExport) < 0) {
+                        errorMessageDiv.textContent = "Please enter valid, non-negative values for both daily import and export.";
+                        errorMessageDiv.classList.remove('hidden');
+                        return;
+                    }
+                    importData = generateSimpleData(simpleImport, simpleProfileSelect.value);
+                    exportData = generateSimpleExportData(simpleExport);
+                } else { // advanced mode
+                    const importError = validateAdvancedInput(advancedImportTextarea.value);
+                    const exportError = validateAdvancedInput(advancedExportTextarea.value);
+                    if (importError || exportError) {
+                        errorMessageDiv.textContent = importError || exportError;
+                        errorMessageDiv.classList.remove('hidden');
+                        return;
+                    }
+                    importData = advancedImportTextarea.value.split(',').map(s => parseFloat(s.trim()));
+                    exportData = advancedExportTextarea.value.split(',').map(s => parseFloat(s.trim()));
+                }
+
+                const currentImportTariff = currentImportTariffSelect.value;
+                const currentExportTariff = currentExportTariffSelect.value;
+                const allImportTariffs = Object.keys(TariffData);
+                const allExportTariffs = Object.keys(ExportTariffData);
+
+                const calculatedResults = [];
+
+                // Calculate all combinations
+                for (const importKey of allImportTariffs) {
+                    for (const exportKey of allExportTariffs) {
+                        const result = calculateSingleResult(importData, exportData, importKey, exportKey);
+                        result.isCurrent = (importKey === currentImportTariff && exportKey === currentExportTariff);
+                        calculatedResults.push(result);
+                    }
+                }
+
+                renderResults(calculatedResults);
+            };
+
+            // Function to render the results table
+            const renderResults = (results) => {
+                resultsTableBody.innerHTML = '';
+                
+                // Sort all results based on net annual cost
+                const sortedResults = [...results].sort((a, b) => a.netAnnualCost - b.netAnnualCost);
+
+                sortedResults.forEach((result, index) => {
+                    const row = document.createElement('tr');
+                    const isCurrent = result.isCurrent;
+                    
+                    row.className = `hover:bg-gray-50 transition-colors ${isCurrent ? 'font-bold bg-gray-100' : ''}`;
+
+                    let rankingBadge = '';
+                    const rank = index + 1;
+                    rankingBadge = `<span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Ranked #${rank}</span>`;
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${isCurrent ? 'Your Current Plan: ' : ''}
+                            ${TariffData[result.importTariff].displayName} + ${ExportTariffData[result.exportTariff].displayName}
+                            ${rankingBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">$${result.dailyImportCost.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600">-$${result.dailyExportRevenue.toFixed(2)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">$${result.netAnnualCost.toFixed(2)}</td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+                resultsContainer.classList.remove('hidden');
+            };
+
+            // Event listeners
+            simpleModeBtn.addEventListener('click', () => switchMode('simple'));
+            advancedModeBtn.addEventListener('click', () => switchMode('advanced'));
+            calculateBtn.addEventListener('click', calculateCosts);
+
+            // Initial setup
+            switchMode('simple');
+        });
+    </script>
+
+</body>
+</html>
