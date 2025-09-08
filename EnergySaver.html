@@ -31,6 +31,26 @@
             height: auto; /* Maintain aspect ratio */
             margin-bottom: 0.5rem;
         }
+		
+		/* New styling for the overall copyright notice */
+        .global-copyright {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 0.75rem; /* Smaller font for general copyright */
+            color: #64748b;
+        }
+		
+		.disclaimer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem; /* text-sm */
+            color: #64748b; /* slate-500 */
+            text-align: center;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -225,8 +245,20 @@
                     </div>
                 </div>
             </div>
-
+		<!-- Disclaimer Section -->
+        <div class="disclaimer">
+            **Disclaimer:** All information provided by Synergy Tariff Comparison Tool is for **general guidance and informational purposes only**. While we strive for accuracy, we make no guarantees regarding the completeness, reliability, or accuracy of the data or calculations. Energy Usage, and electricity prices can vary significantly based on real-world conditions and other costs. Users should use this information **at their own risk** and verify any critical details independently. We **take no liability** for any incorrect data or calculations, or for any decisions made based on the information presented.
+        </div>	
+			
+		<!-- Global Copyright Notice -->
+        <div class="global-copyright">
+            © 2025 UmemeConnect. All rights reserved.
+            <span id="app-version" class="ml-2 text-gray-500"></span>
         </div>
+        </div>
+		
+
+		
     </div>
 
     <script>
