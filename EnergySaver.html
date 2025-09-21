@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Energy Tariff Comparison Tool</title>
-    <!-- Tailwind CSS CDN for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ96CqE+3t/hK2J2pQ+k/y6Jd2J9gD6I6z4t0n7E4L4L2V7G7Q+" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -32,6 +30,21 @@
             margin-bottom: 0.5rem;
         }
 		
+		/* Base styles for the Solar and Battery section */
+		.solar-section-container {
+			overflow: hidden;
+			transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+			max-height: 0;
+			opacity: 0;
+		}
+
+		/* Class to apply when the section is shown */
+		.solar-section-container.visible {
+			max-height: 1000px; /* A large value to accommodate the content */
+			opacity: 1;
+			margin-top: 1.5rem; /* This is the equivalent of mt-6 in Tailwind CSS */
+		}	
+				
 		/* New styling for the overall copyright notice */
         .global-copyright {
             margin-top: 2rem;
@@ -40,15 +53,6 @@
             text-align: center;
             font-size: 0.75rem; /* Smaller font for general copyright */
             color: #64748b;
-        }
-		
-		.feedback-section {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            border: 1px dashed #cbd5e1;
-            border-radius: 1rem;
-            text-align: center;
-            background-color: #f8fafc;
         }
 		
 		.disclaimer {
@@ -60,14 +64,129 @@
             text-align: center;
             line-height: 1.5;
         }
+		
+		.feedback-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border: 1px dashed #cbd5e1;
+            border-radius: 1rem;
+            text-align: center;
+            background-color: #f8fafc;
+        }
+        .feedback-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+        .feedback-section p {
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 1rem;
+        }
+        .feedback-section a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+		
+		/* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensures it's on top of other content */
+            visibility: hidden; /* Hidden by default */
+            opacity: 0; /* Faded out by default */
+            transition: visibility 0.3s, opacity 0.3s;
+        }
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-dialog {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            transform: translateY(20px); /* Small subtle animation */
+            transition: transform 0.3s ease-out;
+        }
+        .modal-overlay.visible .modal-dialog {
+            transform: translateY(0);
+        }
+        .modal-dialog h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem; /* Adjusted for subheading */
+            text-align: center;
+        }
+        .modal-dialog .modal-subtitle {
+            font-size: 0.9rem;
+            color: #475569;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-dialog .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .modal-dialog .close-button:hover {
+            color: #334155;
+        }
+        .modal-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #334155;
+        }
+        .modal-form input[type="radio"] {
+            margin-right: 0.5rem;
+            accent-color: #3b82f6;
+        }
+        .modal-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .modal-form button[type="submit"] {
+            background-color: #16a34a; /* Green 600 */
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            border: none;
+            margin-top: 1.5rem;
+        }
+        .modal-form button[type="submit"]:hover {
+            background-color: #15803d; /* Green 700 */
+        }
     </style>
 </head>
 <body>
 
     <div class="min-h-screen py-8 px-4 flex items-center justify-center">
         <div class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-2xl w-full">
-		
-		<div class="logo-display">
+			<!-- UmemeConnect Logo -->
+			<div class="logo-display">
                 <!-- UmemeConnect Logo (Emphasized Umeme) - REVISED SPACING AND NO COPYRIGHT SYMBOL -->
                 <svg viewBox="0 0 220 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title-umeme-logo desc-umeme-logo">
                     <title id="title-umeme-logo">UmemeConnect Logo (Emphasized Umeme)</title>
@@ -93,14 +212,12 @@
                     <!-- Subtle 'Connect' text below 'Umeme' - adjusted x for better alignment and increased font size -->
                     <text x="100" y="95" font-family="Inter, sans-serif" font-size="20" text-anchor="middle" fill="#475569">Connect</text>
                 </svg>
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
-                <i class="fas fa-bolt text-yellow-500 mr-2"></i> Synergy Tariff Comparison Tool
-            </h1>
-            </div>
-		
+				<h1 class="text-3xl font-bold text-center text-gray-800 mb-6 flex items-center justify-center">
+					<i class="fas fa-bolt text-yellow-500 mr-2"></i> Synergy Tariff Comparison Tool
+				</h1>
+			</div>
 
-
-            <!-- Mode Selector -->
+			<!-- Mode Selector -->
             <div class="flex justify-center mb-6">
                 <div class="bg-gray-200 rounded-full p-1 flex items-center">
                     <button id="simple-mode-btn" class="py-2 px-6 rounded-full text-sm font-semibold transition-all duration-300 bg-indigo-600 text-white shadow-md hover:bg-indigo-700">
@@ -117,7 +234,7 @@
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                     <i class="fas fa-cloud-upload-alt text-indigo-500 mr-2"></i> Your Energy Data
                 </h2>
-
+				
                 <!-- Tariff Selection Inputs -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div>
@@ -161,7 +278,7 @@
                         </select>
                     </div>
                 </div>
-
+				
                 <!-- Advanced Mode Inputs -->
                 <div id="advanced-mode-container" class="hidden">
                     <div class="space-y-4">
@@ -181,14 +298,69 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div id="error-message" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-md border border-red-200"></div>
+            <div class="mt-6 text-center">
+				<button id="toggle-solar-section" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+					<i class="fas fa-solar-panel text-orange-500 mr-2"></i>Optional: Add Solar & Battery System
+				</button>
+            </div>			
 
-                <div class="mt-6 text-center">
-                    <button id="calculate-btn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
-                        <i class="fas fa-calculator mr-2"></i> Calculate & Compare
-                    </button>
-                </div>
+			<!-- Optional additional PV and Battery Section -->
+			<div id="solar-system-section" class="solar-section-container bg-gray-50 p-6 rounded-2xl border border-gray-200">
+				<p class="mb-4 text-sm text-gray-600">
+					<i class="fas fa-info-circle text-blue-500 mr-1"></i> This section allows you to model the financial impact of **adding** a new solar and/or battery system to your existing setup.
+				</p>
+
+				<h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+					<i class="fas fa-solar-panel text-orange-500 mr-2"></i> Optional: Additional Solar & Battery System (Beta)
+				</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div>
+						<label for="pv-size" class="block text-sm font-medium text-gray-700">Additional Solar PV System Size (kW)</label>
+						<input type="number" id="pv-size" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 6.6" min="0" step="0.1">
+					</div>
+					<div>
+						<label for="pv-cost" class="block text-sm font-medium text-gray-700">Solar PV System Cost ($)</label>
+						<input type="number" id="pv-cost" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 6000" min="0" step="100">
+					</div>
+					<div>
+						<label for="battery-capacity" class="block text-sm font-medium text-gray-700">Battery Capacity (kWh)</label>
+						<input type="number" id="battery-capacity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 10" min="0" step="0.1">
+					</div>
+					<div>
+						<label for="battery-cost" class="block text-sm font-medium text-gray-700">Battery System Cost ($)</label>
+						<input type="number" id="battery-cost" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., 8000" min="0" step="100">
+					</div>
+				</div>
+				
+				<div>
+					<label for="battery-mode" class="block text-sm font-medium text-gray-700">Battery Operating Mode</label>
+					<select id="battery-mode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+						<option value="self-consumption">Prioritise Self Consumption</option>
+						<option value="bill-reduction" disabled>Prioritise Bill Reduction (Future)</option>
+						<option value="peak-discharge" disabled>Prioritise Peak Discharge (Future)</option>
+					</select>
+				</div>
+				
+				<div class="mt-4 flex items-start">
+					<div class="flex items-center h-5">
+						<input id="vpp-benefit-checkbox" name="vpp-benefit-checkbox" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+					</div>
+					<div class="ml-3 text-sm">
+						<label for="vpp-benefit-checkbox" class="font-medium text-gray-700">Include Estimated VPP Benefit</label>
+						<p class="text-gray-500">Estimates an annual credit of $120 for participation in a VPP.</p>
+					</div>
+				</div>
+			</div>
+
+            <div id="error-message" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-md border border-red-200"></div>
+
+			<!-- Compare and Calculate Execution -->
+            <div class="mt-6 text-center">
+                <button id="calculate-btn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+                    <i class="fas fa-calculator mr-2"></i> Calculate & Compare
+                </button>
             </div>
 
             <!-- Results Table -->
@@ -201,17 +373,70 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider rounded-tl-2xl">Tariff Combination</th>
                                 <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Daily Import Cost</th>
                                 <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Daily Export Revenue</th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider rounded-tr-2xl">Net Annual Cost</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-900 uppercase tracking-wider rounded-tr-2xl">Net Annual Cost</th>
                             </tr>
                         </thead>
                         <tbody id="results-table-body" class="divide-y divide-gray-200">
-                            <!-- Results will be injected here by JavaScript -->
-                        </tbody>
+							<!-- Results will be injected here by JavaScript -->
+						</tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tariff Details Section -->
+			<!-- Display Energy Consumed and Export Chart -->
+            <div id="chart-container" class="hidden mt-8 p-6 bg-gray-50 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Daily Energy Flow</h2>
+                <p class="text-center text-sm text-gray-500 mb-4">
+                    Visualize your energy flow throughout the day. Values above the line are imported from the grid, and values below the line are exported back to the grid.
+                </p>
+                <div class="chart-wrapper">
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </div>
+            
+			<!-- Display Battery State of Charge Chart -->
+            <div id="soc-chart-container" class="hidden mt-8 p-6 bg-gray-50 rounded-2xl shadow-lg border border-gray-200">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Battery State of Charge (SOC)</h2>
+                <p class="text-center text-sm text-gray-500 mb-4">
+                    Track the battery's charge level throughout the day as it charges with excess solar and discharges to meet your home's needs.
+                </p>
+                <div class="chart-wrapper">
+                    <canvas id="socChart"></canvas>
+                </div>
+            </div>
+
+			<!-- Solar and PV Payback Results -->
+            <div id="payback-container" class="hidden mt-8 p-6 bg-green-50 rounded-2xl shadow-lg border border-green-200">
+                <h2 class="text-2xl font-bold text-center text-green-700 mb-4">Solar & Battery System Analysis</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">Before System Installation</h3>
+                            <div id="before-details" class="text-sm text-gray-600"></div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow">
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">After System Installation</h3>
+                            <div id="after-details" class="text-sm text-gray-600"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow mt-4">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Payback Scenario 1: Total Savings from Switching Tariff and Adding DER</h3>
+                        <p class="text-sm text-gray-500 mb-2">
+                            This compares your existing annual cost with your current tariff against the new, lower annual cost you would achieve by installing a DER system and moving to the most optimal new tariff.
+                        </p>
+                        <div id="payback-scenario-1" class="text-sm text-gray-600"></div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow mt-4">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Payback Scenario 2: Savings from the DER System Only</h3>
+                        <p class="text-sm text-gray-500 mb-2">
+                            This isolates the financial benefit of the DER system itself, showing the difference in annual cost if you were already on the most optimal tariff (including legacy tariffs).
+                        </p>
+                        <div id="payback-scenario-2" class="text-sm text-gray-600"></div>
+                    </div>
+                </div>
+            </div>
+
+			<!-- Tariff Details & Assumptions Section -->
             <div class="mt-12 p-6 bg-gray-100 rounded-2xl shadow-inner">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4">Tariff Details & Assumptions</h3>
                 <div class="space-y-6">
@@ -248,33 +473,37 @@
                         <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
                             <li>All calculations are based on the input daily data. The net annual cost is simply the daily cost multiplied by 365 days.</li>
                             <li>Daily usage patterns are assumed to be consistent throughout the year.</li>
+							<li>In the PV modelling, a maximum export limit of 5kW is used</li>
                             <li>All prices (including supply charges and GST) are based on the latest publicly available Synergy data as of July 2025.</li>
                             <li>This tool provides an estimate. Actual bills may vary due to factors like varying daily usage, seasonal changes, and other fees or charges from your provider.</li>
                         </ul>
                     </div>
                 </div>
             </div>
-		
-				<!-- Feedback Section -->					
-		<div class="feedback-section">
-			<h3>Spotted a Bug or Have an Idea?</h3>
-			<p>We're constantly improving our Energy Companion Tools. Your feedback is invaluable!</p>
-			<!-- Link to open the modal -->
-			<a href="#" id="open-feedback-modal-link" class="text-blue-600 font-semibold underline">Click Here to Send Us Feedback</a>
-		</div>
-		
-		<!-- Disclaimer Section -->
-        <div class="disclaimer">
-            **Disclaimer:** All information provided by Synergy Tariff Comparison Tool is for **general guidance and informational purposes only**. While we strive for accuracy, we make no guarantees regarding the completeness, reliability, or accuracy of the data or calculations. Energy Usage, and electricity prices can vary significantly based on real-world conditions and other costs. Users should use this information **at their own risk** and verify any critical details independently. We **take no liability** for any incorrect data or calculations, or for any decisions made based on the information presented.
-        </div>	
 			
-		<!-- Global Copyright Notice -->
-        <div class="global-copyright">
-            © 2025 UmemeConnect. All rights reserved.
-            <span id="app-version" class="ml-2 text-gray-500"></span>
+			<!-- Feedback and Bug Report Section -->
+			<div class="feedback-section">
+				<h3>Spotted a Bug or Have an Idea?</h3>
+				<p>We're constantly improving the Synegy Tariff Tool. Your feedback is invaluable!</p>
+				<!-- Link to open the modal -->
+				<a href="#" id="open-feedback-modal-link" class="text-blue-600 font-semibold underline">Click Here to Send Us Feedback</a>
+			</div>	
+			
+			<!-- Disclaimer Section -->
+			<div class="disclaimer">
+				**Disclaimer:** All information provided by Synergy Tariff Comparison Tool is for **general guidance and informational purposes only**. While we strive for accuracy, we make no guarantees regarding the completeness, reliability, or accuracy of the data or calculations. Energy Usage, and electricity prices can vary significantly based on real-world conditions and other costs. Users should use this information **at their own risk** and verify any critical details independently. We **take no liability** for any incorrect data or calculations, or for any decisions made based on the information presented.
+			</div>	
+			
+			<!-- Global Copyright Notice -->
+			<div class="global-copyright">
+				© 2025 UmemeConnect. All rights reserved.
+				<span id="app-version" class="ml-2 text-gray-500"></span>
+			</div>			
+			
+			
         </div>
-        </div>
-		
+    </div>
+
 		<!-- Netlify Form Detection -->
 		<!-- The hidden form below is required for Netlify's automatic form detection.
 			 It ensures that the client-side feedback form, which is dynamically
@@ -350,11 +579,25 @@
 		  </div>
 		</div>	
     </div>
+	
     <script>
+	
+	    // Current application version
+        const APP_VERSION = "2.8.6"; // Major.Minor.Patch
+        const HAS_SEEN_UPDATE_BANNER_KEY = 'hasSeenUpdateBanner_v1_1_0'; // Unique key for this version's banner
+	
+	    // New elements for update
+        const appVersionSpan = document.getElementById('app-version');
+        const updateBanner = document.getElementById('update-banner');
+        const closeBannerButton = document.getElementById('close-banner');
+        const newBadge = document.getElementById('new-badge');
+	
         document.addEventListener('DOMContentLoaded', () => {
 
             // State management
             let mode = 'simple';
+            let energyChartInstance = null;
+            let socChartInstance = null;
 
             // DOM elements
             const simpleModeBtn = document.getElementById('simple-mode-btn');
@@ -365,6 +608,15 @@
             const errorMessageDiv = document.getElementById('error-message');
             const resultsContainer = document.getElementById('results-container');
             const resultsTableBody = document.getElementById('results-table-body');
+            const paybackContainer = document.getElementById('payback-container');
+            const beforeDetailsDiv = document.getElementById('before-details');
+            const afterDetailsDiv = document.getElementById('after-details');
+            const paybackScenario1Div = document.getElementById('payback-scenario-1');
+            const paybackScenario2Div = document.getElementById('payback-scenario-2');
+            const chartContainer = document.getElementById('chart-container');
+            const socChartContainer = document.getElementById('soc-chart-container');
+			const toggleButton = document.getElementById('toggle-solar-section');
+			const solarSection = document.getElementById('solar-system-section');
             
             // Input elements
             const simpleImportInput = document.getElementById('simple-import');
@@ -374,8 +626,17 @@
             const advancedExportTextarea = document.getElementById('advanced-export');
             const currentImportTariffSelect = document.getElementById('current-import-tariff');
             const currentExportTariffSelect = document.getElementById('current-export-tariff');
+            const pvSizeInput = document.getElementById('pv-size');
+            const pvCostInput = document.getElementById('pv-cost');
+            const batteryCapacityInput = document.getElementById('battery-capacity');
+            const batteryCostInput = document.getElementById('battery-cost');
+            const vppBenefitCheckbox = document.getElementById('vpp-benefit-checkbox');
+            const batteryModeSelect = document.getElementById('battery-mode');
+            
+            // Constant for VPP benefit
+            const VPP_ANNUAL_CREDIT = 120; // Represents an annual credit for participating in a VPP
 
-            // Tariff data - Updated for 2025 rates
+            // Tariff data - Updated for 2025 rates based on 1 July 2025 Synergy data
             const TariffData = {
                 A1: {
                     displayName: 'Home Plan (A1)',
@@ -439,6 +700,36 @@
                 return hours * 60 + minutes;
             };
 
+			// Function to reset all form fields in the section
+			const resetFields = () => {
+				const inputs = solarSection.querySelectorAll('input, select');
+				inputs.forEach(input => {
+					if (input.type === 'number') {
+						input.value = ''; // Reset number inputs
+					} else if (input.type === 'checkbox') {
+						input.checked = false; // Uncheck checkboxes
+					} else if (input.tagName === 'SELECT') {
+						input.selectedIndex = 0; // Reset select to the first option
+					}
+				});
+			};
+
+			// Toggle Optional Battery and Solar Section On
+			toggleButton.addEventListener('click', () => {
+				// Toggle visibility of the section
+				solarSection.classList.toggle('visible');
+
+			// Check if the section is now expanded
+			if (solarSection.classList.contains('visible')) {
+				toggleButton.textContent = 'Hide Solar & Battery Section';
+			} else {
+				// If hidden, reset the fields and update button text
+				resetFields();
+				toggleButton.textContent = 'Add Solar & Battery System';
+				}
+			});
+
+
             // Helper function to get the rate for a given time and tariff
             const getRateForTime = (tariffRates, time) => {
                 const currentTime = timeToMinutes(time);
@@ -496,34 +787,168 @@
                 return intervals;
             };
 
-            // Generates a 48-interval array for export in simple mode
-            const generateSimpleExportData = (dailyTotal) => {
-                const intervals = Array(48).fill(0);
-                const totalToDistribute = parseFloat(dailyTotal);
-                if (isNaN(totalToDistribute) || totalToDistribute <= 0) return intervals;
-                
-                // Use a simple triangular distribution for solar export, peaking midday (9am - 3pm)
-                const peakStart = 18; // 9am
-                const peakEnd = 30; // 3pm
-                const numPeakIntervals = peakEnd - peakStart;
-                
-                // Calculate the peak height of the triangle
-                const maxPeakHeight = (2 * totalToDistribute) / numPeakIntervals;
-                
-                for (let i = peakStart; i < peakEnd; i++) {
-                    const relativePos = (i - peakStart) / (numPeakIntervals - 1);
-                    intervals[i] = maxPeakHeight * (relativePos <= 0.5 ? 2 * relativePos : 2 * (1 - relativePos));
-                }
-                
-                // Re-normalize to ensure the sum is exactly the daily total, accounting for floating point math
-                const currentSum = intervals.reduce((acc, val) => acc + val, 0);
-                if (currentSum > 0) {
-                    const scaleFactor = totalToDistribute / currentSum;
-                    return intervals.map(val => val * scaleFactor);
-                }
-                return intervals;
-            };
+			// Generates a 48-interval array for export using a bell-shaped curve
+			const generateSimpleExportData = (dailyTotal) => {
+				const intervals = Array(48).fill(0);
+				const totalToDistribute = parseFloat(dailyTotal);
+				if (isNaN(totalToDistribute) || totalToDistribute <= 0) return intervals;
 
+				// Parameters for the bell curve
+				const peakInterval = 24; // 12 PM - The center of the distribution
+				const standardDeviation = 4.5; // Controls the spread of the curve
+
+				// Calculate unscaled values for each interval
+				for (let i = 0; i < 48; i++) {
+					// Gaussian probability density function
+					const exponent = -0.5 * Math.pow((i - peakInterval) / standardDeviation, 2);
+					intervals[i] = Math.exp(exponent);
+				}
+
+				// Normalize the data to ensure the sum equals the daily total
+				const currentSum = intervals.reduce((acc, val) => acc + val, 0);
+				if (currentSum > 0) {
+					const scaleFactor = totalToDistribute / currentSum;
+					return intervals.map(val => val * scaleFactor);
+				}
+
+				return intervals;
+			};
+
+			// Simulates daily PV generation with a 5 kW export limit to the grid
+			const generatePVData = (pvSize) => {
+				const dailyTotal = pvSize * 4; // Assuming 4 peak sun hours on average
+				const intervals = Array(48).fill(0);
+				if (dailyTotal <= 0) return intervals;
+
+				const peakInterval = 24; // 12 PM - The center of the distribution
+				const standardDeviation = 4.5; // Controls the spread of the curve
+				const exportLimit = 5; // The 5 kW export limit
+
+				// First, generate the full, unclipped bell-shaped curve
+				for (let i = 0; i < 48; i++) {
+					const exponent = -0.5 * Math.pow((i - peakInterval) / standardDeviation, 2);
+					intervals[i] = Math.exp(exponent);
+				}
+
+				const currentSum = intervals.reduce((acc, val) => acc + val, 0);
+				if (currentSum === 0) return intervals;
+
+				// Scale the intervals to meet the daily total
+				const scaleFactor = dailyTotal / currentSum;
+				const scaledIntervals = intervals.map(val => val * scaleFactor);
+
+				// Apply the export limit and calculate the new total
+				let clippedTotal = 0;
+				const limitedIntervals = scaledIntervals.map(val => {
+					const limitedValue = Math.min(val, exportLimit);
+					clippedTotal += limitedValue;
+					return limitedValue;
+				});
+
+				return limitedIntervals;
+			};
+			
+			// New and corrected simulateBattery function for advanced logic
+            const simulateBattery = (netGridImportExport, batteryCapacity, batteryMode, importTariffKey) => {
+                const finalNetGrid = [...netGridImportExport];
+                const socLog = [];
+                let batteryStateOfCharge = 0.0;
+                const batteryEfficiency = 0.9;
+                
+                const importTariff = TariffData[importTariffKey];
+                if (!importTariff || !importTariff.importRates) {
+                     console.error('Invalid import tariff data provided to simulateBattery.');
+                     return { finalNetGrid, socLog: [] };
+                }
+
+                // Get rates for strategic decisions
+                const sortedImportRates = [...importTariff.importRates].sort((a, b) => a.rate - b.rate);
+                const superOffPeakRate = sortedImportRates[0].rate;
+                const peakRate = sortedImportRates[sortedImportRates.length - 1].rate;
+                
+                // --- Pass 1: Charge from excess solar power and meet home load from solar/battery ---
+                // This pass is common to all modes
+                for (let i = 0; i < 48; i++) {
+                    const homeLoad = finalNetGrid[i];
+                    
+                    if (homeLoad < 0) { // Excess PV generation (e.g., -2 kWh)
+                        const energyFromPV = -homeLoad;
+                        const chargeAmount = Math.min(energyFromPV, batteryCapacity - batteryStateOfCharge);
+                        batteryStateOfCharge += chargeAmount * batteryEfficiency;
+                        finalNetGrid[i] += chargeAmount; // Reduce export by what was charged
+                    } else if (homeLoad > 0) { // Home needs energy from grid or battery
+                        const dischargeableEnergy = batteryStateOfCharge / batteryEfficiency;
+                        const energyFromBattery = Math.min(homeLoad, dischargeableEnergy);
+                        
+                        finalNetGrid[i] -= energyFromBattery;
+                        batteryStateOfCharge -= energyFromBattery;
+                    }
+                }
+                
+                // --- Pass 2: Strategic Grid Charging & Discharging based on mode ---
+                if (batteryMode === 'bill-reduction') {
+                    // Identify total energy needed during high-cost periods
+                    const highCostPeriodsEnergy = finalNetGrid.filter((load, i) => {
+                        const time = `${String(Math.floor(i / 2)).padStart(2, '0')}:${String((i % 2) * 30).padStart(2, '0')}`;
+                        return getRateForTime(importTariff.importRates, time) >= peakRate && load > 0;
+                    }).reduce((sum, load) => sum + load, 0);
+
+                    const deficitToCharge = highCostPeriodsEnergy - batteryStateOfCharge;
+
+                    // Charge from grid during super off-peak to cover high-cost needs
+                    if (deficitToCharge > 0) {
+                        for (let i = 0; i < 48; i++) {
+                            const time = `${String(Math.floor(i / 2)).padStart(2, '0')}:${String((i % 2) * 30).padStart(2, '0')}`;
+                            const currentRate = getRateForTime(importTariff.importRates, time);
+
+                            if (currentRate === superOffPeakRate && finalNetGrid[i] > 0) {
+                                const chargeAmount = Math.min(batteryCapacity - batteryStateOfCharge, deficitToCharge);
+                                batteryStateOfCharge += chargeAmount;
+                                finalNetGrid[i] -= chargeAmount;
+                                if (batteryStateOfCharge >= batteryCapacity) break; // Battery is full
+                            }
+                        }
+                    }
+                } else if (batteryMode === 'peak-discharge') {
+                    // Find the single highest rate period
+                    const peakPeriods = importTariff.importRates.filter(r => r.rate === peakRate);
+                    const peakIntervals = [];
+                    for(const p of peakPeriods) {
+                        const start = timeToMinutes(p.start) / 30;
+                        const end = timeToMinutes(p.end) / 30;
+                        for(let i = start; i < end; i++) peakIntervals.push(i);
+                    }
+                    
+                    // Discharge during peak intervals to meet load
+                    for (let i of peakIntervals) {
+                        if (batteryStateOfCharge > 0 && finalNetGrid[i] > 0) {
+                            const dischargeable = batteryStateOfCharge / batteryEfficiency;
+                            const dischargeAmount = Math.min(finalNetGrid[i], dischargeable);
+                            finalNetGrid[i] -= dischargeAmount;
+                            batteryStateOfCharge -= dischargeAmount;
+                        }
+                    }
+                } // 'self-consumption' requires no further grid interaction logic
+
+                // --- Pass 3: Generate accurate SoC log ---
+                let currentSoC = 0;
+                for (let i = 0; i < 48; i++) {
+                    const energyFlow = netGridImportExport[i];
+                    if (energyFlow < 0) { // Excess PV
+                        const availableEnergy = -energyFlow;
+                        const chargeAmount = Math.min(availableEnergy, batteryCapacity - currentSoC);
+                        currentSoC += chargeAmount * batteryEfficiency;
+                    } else if (energyFlow > 0) { // Load
+                        const dischargeable = currentSoC / batteryEfficiency;
+                        const dischargeAmount = Math.min(energyFlow, dischargeable);
+                        currentSoC -= dischargeAmount;
+                    }
+                    socLog.push(currentSoC);
+                }
+
+                return { finalNetGrid, socLog: socLog };
+            };
+			
             // Function to show/hide sections and update button styling
             const switchMode = (newMode) => {
                 mode = newMode;
@@ -543,6 +968,9 @@
                     simpleModeBtn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
                 }
                 resultsContainer.classList.add('hidden');
+                paybackContainer.classList.add('hidden');
+                chartContainer.classList.add('hidden');
+                socChartContainer.classList.add('hidden');
                 errorMessageDiv.classList.add('hidden');
             };
 
@@ -594,9 +1022,11 @@
 
             // Main calculation function
             const calculateCosts = () => {
-                let importData, exportData;
+                let beforeImportData, beforeExportData;
                 errorMessageDiv.classList.add('hidden');
                 resultsContainer.classList.add('hidden');
+                paybackContainer.classList.add('hidden');
+                socChartContainer.classList.add('hidden');
                 
                 if (mode === 'simple') {
                     const simpleImport = simpleImportInput.value;
@@ -606,8 +1036,8 @@
                         errorMessageDiv.classList.remove('hidden');
                         return;
                     }
-                    importData = generateSimpleData(simpleImport, simpleProfileSelect.value);
-                    exportData = generateSimpleExportData(simpleExport);
+                    beforeImportData = generateSimpleData(simpleImport, simpleProfileSelect.value);
+                    beforeExportData = generateSimpleExportData(simpleExport);
                 } else { // advanced mode
                     const importError = validateAdvancedInput(advancedImportTextarea.value);
                     const exportError = validateAdvancedInput(advancedExportTextarea.value);
@@ -616,8 +1046,8 @@
                         errorMessageDiv.classList.remove('hidden');
                         return;
                     }
-                    importData = advancedImportTextarea.value.split(',').map(s => parseFloat(s.trim()));
-                    exportData = advancedExportTextarea.value.split(',').map(s => parseFloat(s.trim()));
+                    beforeImportData = advancedImportTextarea.value.split(',').map(s => parseFloat(s.trim()));
+                    beforeExportData = advancedExportTextarea.value.split(',').map(s => parseFloat(s.trim()));
                 }
 
                 const currentImportTariff = currentImportTariffSelect.value;
@@ -626,17 +1056,449 @@
                 const allExportTariffs = Object.keys(ExportTariffData);
 
                 const calculatedResults = [];
+                let beforeCurrentAnnualCost = 0;
 
-                // Calculate all combinations
+                // Calculate all combinations for the table
                 for (const importKey of allImportTariffs) {
                     for (const exportKey of allExportTariffs) {
-                        const result = calculateSingleResult(importData, exportData, importKey, exportKey);
+                        const result = calculateSingleResult(beforeImportData, beforeExportData, importKey, exportKey);
                         result.isCurrent = (importKey === currentImportTariff && exportKey === currentExportTariff);
                         calculatedResults.push(result);
+                        if (result.isCurrent) {
+                            beforeCurrentAnnualCost = result.netAnnualCost;
+                        }
+                    }
+                }
+                
+                // Sort results for ranking and finding the best tariff
+                const sortedResults = [...calculatedResults].sort((a, b) => a.netAnnualCost - b.netAnnualCost);
+                const bestBeforeResult = sortedResults[0];
+
+                // Render tariff comparison results
+                renderResults(calculatedResults);
+                
+                // Render the chart with "before" data
+                renderChart(beforeImportData, beforeExportData);
+
+                // Check for solar/battery inputs
+                const pvSize = parseFloat(pvSizeInput.value) || 0;
+                const pvCost = parseFloat(pvCostInput.value) || 0;
+                const batteryCapacity = parseFloat(batteryCapacityInput.value) || 0;
+                const batteryCost = parseFloat(batteryCostInput.value) || 0;
+                const isVPPEnabled = vppBenefitCheckbox.checked;
+                const batteryMode = batteryModeSelect.value;
+                
+                if (pvSize > 0 || batteryCapacity > 0) {
+                    calculatePayback(
+                        beforeImportData,
+                        beforeExportData,
+                        beforeCurrentAnnualCost,
+                        pvSize,
+                        pvCost,
+                        batteryCapacity,
+                        batteryCost,
+                        bestBeforeResult.netAnnualCost,
+                        `${TariffData[bestBeforeResult.importTariff].displayName} + ${ExportTariffData[bestBeforeResult.exportTariff].displayName}`,
+                        currentImportTariff,
+                        currentExportTariff,
+                        isVPPEnabled,
+                        batteryMode
+                    );
+                } else {
+                    paybackContainer.classList.add('hidden');
+                }
+            };
+
+            // Calculate payback period for solar and/or battery
+            const calculatePayback = (
+                beforeImportData,
+                beforeExportData,
+                beforeCurrentAnnualCost,
+                pvSize,
+                pvCost,
+                batteryCapacity,
+                batteryCost,
+                beforeOptimizedAnnualCost,
+                bestBeforeOptimizedTariff,
+                currentImportTariffKey,
+                currentExportTariffKey,
+                isVPPEnabled,
+                batteryMode
+            ) => {
+                // Calculate net energy flow for the BEFORE scenario
+                const beforeNetEnergy = Array(48).fill(0);
+                for (let i = 0; i < 48; i++) {
+                    beforeNetEnergy[i] = beforeImportData[i] - beforeExportData[i];
+                }
+
+                // Calculate PV data for the day
+                const pvData = generatePVData(pvSize);
+
+                // Calculate net energy flow for the AFTER DER scenario
+                const afterNetEnergy = Array(48).fill(0);
+                for (let i = 0; i < 48; i++) {
+                    afterNetEnergy[i] = beforeNetEnergy[i] - pvData[i];
+                }
+                
+                let afterImportData = [];
+                let afterExportData = [];
+                let socLog = null;
+                
+                if (batteryCapacity > 0) {
+                    const simulationResult = simulateBattery(afterNetEnergy, batteryCapacity, batteryMode, 'MiddaySaver'); // Assuming MiddaySaver for bill reduction logic
+                    socLog = simulationResult.socLog;
+                    for (let i = 0; i < 48; i++) {
+                        if (simulationResult.finalNetGrid[i] > 0) {
+                            afterImportData.push(simulationResult.finalNetGrid[i]);
+                            afterExportData.push(0);
+                        } else {
+                            afterImportData.push(0);
+                            afterExportData.push(-simulationResult.finalNetGrid[i]);
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < 48; i++) {
+                        if (afterNetEnergy[i] > 0) {
+                            afterImportData.push(afterNetEnergy[i]);
+                            afterExportData.push(0);
+                        } else {
+                            afterImportData.push(0);
+                            afterExportData.push(-afterNetEnergy[i]);
+                        }
+                    }
+                }
+                
+                // Find the best NEW tariff AFTER DER, excluding legacy tariffs
+                let afterOptimizedAnnualCost = Infinity;
+                let bestAfterOptimizedTariff = '';
+                const newImportTariffs = ['A1', 'MiddaySaver', 'EVAddOn'];
+                const newExportTariffs = ['DEBS'];
+
+                for (const importKey of newImportTariffs) {
+                    for (const exportKey of newExportTariffs) {
+                        const result = calculateSingleResult(afterImportData, afterExportData, importKey, exportKey);
+                        if (result.netAnnualCost < afterOptimizedAnnualCost) {
+                            afterOptimizedAnnualCost = result.netAnnualCost;
+                            bestAfterOptimizedTariff = `${TariffData[importKey].displayName} + ${ExportTariffData[exportKey].displayName}`;
+                        }
+                    }
+                }
+                
+                // Apply VPP benefit if enabled
+                let vppCredit = 0;
+                if (isVPPEnabled && batteryCapacity > 0) {
+                    vppCredit = VPP_ANNUAL_CREDIT;
+                    afterOptimizedAnnualCost -= vppCredit;
+                }
+                
+                // If no new tariffs exist, use a fallback
+                if (bestAfterOptimizedTariff === '') {
+                    afterOptimizedAnnualCost = beforeOptimizedAnnualCost;
+                    bestAfterOptimizedTariff = 'N/A';
+                }
+
+                const totalCost = pvCost + batteryCost;
+                
+                // Scenario 1: Current Tariff to Optimal New Tariff with DER
+                
+                let bestNewTariffBeforeDerCost = Infinity;
+                let bestNewTariffName = '';
+                for (const importKey of newImportTariffs) {
+                    for (const exportKey of newExportTariffs) {
+                        const result = calculateSingleResult(beforeImportData, beforeExportData, importKey, exportKey);
+                        if (result.netAnnualCost < bestNewTariffBeforeDerCost) {
+                            bestNewTariffBeforeDerCost = result.netAnnualCost;
+                            bestNewTariffName = `${TariffData[importKey].displayName} + ${ExportTariffData[exportKey].displayName}`;
+                        }
                     }
                 }
 
-                renderResults(calculatedResults);
+                const annualSavings1 = beforeCurrentAnnualCost - afterOptimizedAnnualCost;
+                const paybackPeriod1 = annualSavings1 > 0 ? totalCost / annualSavings1 : 'N/A';
+                
+                // Scenario 2: Optimal Overall Tariff to Optimal Overall Tariff with DER
+                const annualSavings2 = beforeOptimizedAnnualCost - afterOptimizedAnnualCost;
+                const paybackPeriod2 = annualSavings2 > 0 ? totalCost / annualSavings2 : 'N/A';
+
+                renderPaybackResults(
+                    beforeImportData,
+                    beforeExportData,
+                    beforeCurrentAnnualCost,
+                    bestBeforeOptimizedTariff,
+                    beforeOptimizedAnnualCost,
+                    afterImportData,
+                    afterExportData,
+                    afterOptimizedAnnualCost,
+                    bestAfterOptimizedTariff,
+                    annualSavings1,
+                    paybackPeriod1,
+                    annualSavings2,
+                    paybackPeriod2,
+                    currentImportTariffKey,
+                    currentExportTariffKey,
+                    bestNewTariffBeforeDerCost,
+                    bestNewTariffName,
+                    vppCredit
+                );
+
+                // Update the chart with both before and after data
+                renderChart(beforeImportData, beforeExportData, afterImportData, afterExportData);
+
+                if (batteryCapacity > 0) {
+                    renderSOCChart(socLog, batteryCapacity);
+                } else {
+                    socChartContainer.classList.add('hidden');
+                }
+            };
+
+            // Render payback results
+            const renderPaybackResults = (
+                beforeCurrentImport,
+                beforeCurrentExport,
+                beforeCurrentAnnualCost,
+                bestBeforeOptimizedTariff,
+                beforeOptimizedAnnualCost,
+                afterImport,
+                afterExport,
+                afterOptimizedAnnualCost,
+                bestAfterOptimizedTariff,
+                annualSavings1,
+                paybackPeriod1,
+                annualSavings2,
+                paybackPeriod2,
+                currentImportTariffKey,
+                currentExportTariffKey,
+                bestNewTariffBeforeDerCost,
+                bestNewTariffName,
+                vppCredit
+            ) => {
+                const beforeCurrentTotalImport = beforeCurrentImport.reduce((acc, val) => acc + val, 0);
+                const beforeCurrentTotalExport = beforeCurrentExport.reduce((acc, val) => acc + val, 0);
+                const afterTotalImport = afterImport.reduce((acc, val) => acc + val, 0);
+                const afterTotalExport = afterExport.reduce((acc, val) => acc + val, 0);
+                const currentTariffName = `${TariffData[currentImportTariffKey].displayName} + ${ExportTariffData[currentExportTariffKey].displayName}`;
+
+                beforeDetailsDiv.innerHTML = `
+                    <p><strong>Daily Grid Import:</strong> ${beforeCurrentTotalImport.toFixed(2)} kWh</p>
+                    <p><strong>Daily Grid Export:</strong> ${beforeCurrentTotalExport.toFixed(2)} kWh</p>
+                    <p><strong>Net Annual Cost on Current Plan:</strong> $${beforeCurrentAnnualCost.toFixed(2)}</p>
+                    <p><strong>Net Annual Cost on Best Plan:</strong> $${beforeOptimizedAnnualCost.toFixed(2)} (${bestBeforeOptimizedTariff})</p>
+                `;
+
+                afterDetailsDiv.innerHTML = `
+                    <p><strong>Daily Grid Import:</strong> ${afterTotalImport.toFixed(2)} kWh</p>
+                    <p><strong>Daily Grid Export:</strong> ${afterTotalExport.toFixed(2)} kWh</p>
+                    ${vppCredit > 0 ? `<p><strong>VPP Annual Credit:</strong> -$${vppCredit.toFixed(2)}</p>` : ''}
+                    <p><strong>Net Annual Cost:</strong> $${afterOptimizedAnnualCost.toFixed(2)}</p>
+                    <p><strong>Optimal Tariff with DER:</strong> ${bestAfterOptimizedTariff}</p>
+                `;
+
+                paybackScenario1Div.innerHTML = `
+                    <p><strong>Before Annual Cost:</strong> $${beforeCurrentAnnualCost.toFixed(2)} (${currentTariffName})</p>
+                    <p><strong>After Annual Cost:</strong> $${afterOptimizedAnnualCost.toFixed(2)} (${bestAfterOptimizedTariff})</p>
+                    <p><strong>Estimated Annual Savings:</strong> $${annualSavings1.toFixed(2)}</p>
+                    <p><strong>Estimated Payback Period:</strong> ${typeof paybackPeriod1 === 'number' ? paybackPeriod1.toFixed(1) + ' years' : paybackPeriod1}</p>
+                `;
+                
+                paybackScenario2Div.innerHTML = `
+                    <p><strong>Before Annual Cost:</strong> $${beforeOptimizedAnnualCost.toFixed(2)} (${bestBeforeOptimizedTariff})</p>
+                    <p><strong>After Annual Cost:</strong> $${afterOptimizedAnnualCost.toFixed(2)} (${bestAfterOptimizedTariff})</p>
+                    <p><strong>Estimated Annual Savings:</strong> $${annualSavings2.toFixed(2)}</p>
+                    <p><strong>Estimated Payback Period:</strong> ${typeof paybackPeriod2 === 'number' ? paybackPeriod2.toFixed(1) + ' years' : paybackPeriod2}</p>
+                `;
+
+                paybackContainer.classList.remove('hidden');
+            };
+
+            // Renders the interactive line chart
+            const renderChart = (beforeImportData, beforeExportData, afterImportData = null, afterExportData = null) => {
+                chartContainer.classList.remove('hidden');
+
+                const ctx = document.getElementById('energyChart').getContext('2d');
+                
+                // Destroy existing chart instance if it exists
+                if (energyChartInstance) {
+                    energyChartInstance.destroy();
+                }
+
+                // Generate time labels for x-axis (every hour for readability)
+                const labels = Array.from({ length: 48 }, (_, i) => {
+                    const hours = Math.floor(i / 2);
+                    const minutes = (i % 2) * 30;
+                    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                });
+
+                const datasets = [
+                    {
+                        label: 'Before (Current Usage)',
+                        data: beforeImportData.map((d, i) => d - beforeExportData[i]),
+                        borderColor: '#4338ca', // indigo-600
+                        fill: false,
+                        tension: 0.2,
+                        pointRadius: 0,
+                    }
+                ];
+
+                if (afterImportData && afterExportData) {
+                    datasets.push({
+                        label: 'After (With Solar & Battery)',
+                        data: afterImportData.map((d, i) => d - afterExportData[i]),
+                        borderColor: '#15803d', // green-700
+                        fill: false,
+                        tension: 0.2,
+                        pointRadius: 0,
+                    });
+                }
+                
+                energyChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: datasets,
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: (tooltipItem) => {
+                                        const index = tooltipItem[0].dataIndex;
+                                        const hours = Math.floor(index / 2);
+                                        const minutes = (index % 2) * 30;
+                                        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                                    },
+                                    label: (context) => {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.raw > 0) {
+                                            label += `+${context.raw.toFixed(2)} kWh (Import)`;
+                                        } else {
+                                            label += `${context.raw.toFixed(2)} kWh (Export)`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time of Day',
+                                    color: '#4b5563'
+                                },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    callback: function(val, index) {
+                                        return index % 4 === 0 ? this.getLabelForValue(val) : '';
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Energy Flow (kWh)',
+                                    color: '#4b5563'
+                                },
+                                beginAtZero: false,
+                                grid: {
+                                    color: (context) => context.tick.value === 0 ? '#4b5563' : '#e5e7eb'
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Renders the battery SOC line chart
+            const renderSOCChart = (socData, batteryCapacity) => {
+                socChartContainer.classList.remove('hidden');
+                
+                const ctx = document.getElementById('socChart').getContext('2d');
+
+                if (socChartInstance) {
+                    socChartInstance.destroy();
+                }
+
+                const labels = Array.from({ length: 48 }, (_, i) => {
+                    const hours = Math.floor(i / 2);
+                    const minutes = (i % 2) * 30;
+                    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                });
+
+                socChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Battery State of Charge',
+                                data: socData,
+                                borderColor: '#059669', // emerald-600
+                                fill: false,
+                                tension: 0.2,
+                                pointRadius: 0,
+                            }
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        return `SOC: ${context.raw.toFixed(2)} kWh`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time of Day',
+                                    color: '#4b5563'
+                                },
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                    callback: function(val, index) {
+                                        return index % 4 === 0 ? this.getLabelForValue(val) : '';
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'SOC (kWh)',
+                                    color: '#4b5563'
+                                },
+                                min: 0,
+                                max: batteryCapacity,
+                                beginAtZero: true,
+                            }
+                        }
+                    }
+                });
             };
 
             // Function to render the results table
@@ -683,9 +1545,6 @@
 	
 	<!-- Feedback Script Link -->
 	<script src="feedback_app.js" defer></script>
-		
-	<!-- Feedback Script Link
-	<script src="js/feedback_app.js" defer></script>
-	-->
+
 </body>
 </html>
